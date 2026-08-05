@@ -3,6 +3,8 @@ target/
 
 ### IntelliJ IDEA ###
 out/
+.idea/
+*.iml
 
 ### Secrets / local config — never commit Auth0 keys, DB passwords, etc. ###
 .env
