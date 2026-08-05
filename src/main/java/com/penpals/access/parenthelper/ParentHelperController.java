@@ -6,6 +6,7 @@ import com.penpals.users.dto.RelationshipsView.*;
 import com.penpals.users.penpal.PenpalService;
 import com.penpals.users.dto.CreatePenpalRequest;
 import com.penpals.users.dto.PenpalViews.*;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,27 +22,30 @@ public class ParentHelperController {
 	private final PenpalService penpalService;
 	private final CurrentUserService currentUserService;
 
-	// controlling which data is returned based on logged in user id
-	@GetMapping("/me")
-	public UserFullView me() {
-		return UserFullView.of(currentUserService.current());
+	@PostMapping("/my-penpals")
+	public PenpalAdminView create(@Valid @RequestBody CreatePenpalRequest body) {
+		return PenpalAdminView.of(
+			penpalService.createPenpalForGuardian(body, currentUserService.currentId()));
 	}
 
-	@GetMapping("/relations")
+	@GetMapping("/my-penpals-companions")
 	public GuardianMapRelationshipView relations() {
 		return penpalService.guardianChatMap(currentUserService.currentId());
 	}
 
-	//todo parenthelper cannot be created by parent helper, and cannot be another parent helper
-	// use current logged in user
-	@PostMapping("/penpals")
-	public UserSummaryView create(@RequestBody CreatePenpalRequest body) {
-		return UserSummaryView.of(penpalService.createPenpal(body));
+	@GetMapping("/my-penpals/{id}")
+	public PenpalAdminView view(@PathVariable Long id) {
+		return PenpalAdminView.of(penpalService.findByIdForGuardian(id, currentUserService.currentId()));
 	}
 
-	// todo check relationship first - duplicate methods, return admin view if I'm parent, bio view if companion of my child
-	@GetMapping("/penpals/{id}")
-	public PenpalBioView view(@PathVariable Long id) {
-		return PenpalBioView.of(penpalService.findById(id));
+	@GetMapping("/my-penpals-companions/{id}")
+	public PenpalBioView viewCompanion(@PathVariable Long id) {
+		return PenpalBioView.of(penpalService.findByIdForCompanionGuardian(id, currentUserService.currentId()));
 	}
+
+	@PutMapping("/my-penpals/{id}")
+	public PenpalAdminView update(@PathVariable Long id, @Valid @RequestBody CreatePenpalRequest body) {
+		return PenpalAdminView.of(penpalService.updatePenpalForGuardian(id, body, currentUserService.currentId()));
+	}
+
 }

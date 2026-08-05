@@ -11,11 +11,11 @@ public record CreatePenpalRequest(
 	@NotNull State state,
 	@Size(max = 2000) String biography,
 	Long parentHelperId,
-	@Valid CreateParentHelperRequest parentHelper     // <-- @Valid cascades the nested rules
+	@Valid CreateAppUserRequest parentHelper     // <-- @Valid cascades the nested rules
 ) {
-	// exactly one guardian source: link an existing one OR create a new one
-	@AssertTrue(message = "Provide exactly one of parentHelperId or parentHelper")
-	private boolean hasExactlyOneGuardian() {
-		return (parentHelperId != null) ^ (parentHelper != null);   // XOR
+	// at most one guardian source: none (added server-side from the current user) or one, never both
+	@AssertTrue(message = "Provide at most one of parentHelperId or parentHelper, not both")
+	private boolean hasAtMostOneGuardian() {
+		return !(parentHelperId != null && parentHelper != null);
 	}
 }

@@ -5,6 +5,7 @@ import com.penpals.users.dto.RelationshipsView.*;
 import com.penpals.users.penpal.PenpalService;
 import com.penpals.users.dto.CreatePenpalRequest;
 import com.penpals.users.dto.PenpalViews.*;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,7 +23,7 @@ public class MonitorController {
 	private final PenpalService penpalService;
 
 	@PostMapping("/penpals")
-	public UserSummaryView create(@RequestBody CreatePenpalRequest body) {
+	public UserSummaryView create(@Valid @RequestBody CreatePenpalRequest body) {
 		return UserSummaryView.of(penpalService.createPenpal(body));
 	}
 

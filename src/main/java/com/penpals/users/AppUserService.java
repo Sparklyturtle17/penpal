@@ -1,6 +1,7 @@
 package com.penpals.users;
 
-import com.penpals.users.dto.CreateParentHelperRequest;
+import com.penpals.users.dto.CreateAppUserRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -32,7 +33,7 @@ public class AppUserService {
 		return appUserRepository.findAllById(ids);
 	}
 
-	public AppUser createParentHelper(CreateParentHelperRequest req) {
+	public AppUser createParentHelper(CreateAppUserRequest req) {
 		AppUser parentHelper = new AppUser();
 		parentHelper.setFirstName(req.firstName());
 		parentHelper.setLastName(req.lastName());
@@ -45,5 +46,15 @@ public class AppUserService {
 
 	public void delete(Long id) {
 		appUserRepository.deleteById(id);
+	}
+
+	public AppUser update(Long id, CreateAppUserRequest body) {
+		AppUser user = findById(id);
+		user.setFirstName(body.firstName());
+		user.setLastName(body.lastName());
+		user.setEmail(body.email());
+		user.setPhone(body.phone());
+		user.setWhatsapp(body.whatsapp());
+		return appUserRepository.save(user);
 	}
 }

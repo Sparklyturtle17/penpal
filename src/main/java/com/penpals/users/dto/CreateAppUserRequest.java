@@ -3,7 +3,7 @@ package com.penpals.users.dto;
 import com.penpals.common.util.ValidationPatterns;
 import jakarta.validation.constraints.*;
 
-public record CreateParentHelperRequest(
+public record CreateAppUserRequest(
 	@NotBlank String firstName,
 	@NotBlank String lastName,
 	@Email String email,                         // rule 3: if present, must be a valid email

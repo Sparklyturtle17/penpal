@@ -8,6 +8,7 @@ import com.penpals.users.dto.PenpalViews.*;
 import com.penpals.users.dto.RelationshipsView.*;
 import com.penpals.users.dto.CreatePenpalRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,11 +19,6 @@ public class PenpalService {
 
 	private final PenpalRepository penpalRepository;
 	private final AppUserService appUserService;
-
-	public Penpal findById (Long id) {
-		return penpalRepository.findById(id)
-			.orElseThrow(() -> new IllegalArgumentException("No user with id " + id));
-	}
 
 	public Penpal createPenpal (CreatePenpalRequest req) {
 		Penpal p = new Penpal();
@@ -41,6 +37,33 @@ public class PenpalService {
 		}
 
 		return penpalRepository.save(p);
+	}
+
+	public Penpal createPenpalForGuardian(CreatePenpalRequest req, Long guardianId) {
+		Penpal p = new Penpal();
+		p.setFirstName(req.firstName());
+		p.setLastName(req.lastName());
+		p.setAge(req.age());
+		p.setState(req.state());
+		p.setBiography(req.biography());
+		p.setRole(RoleEnum.PENPAL);
+		p.setParentHelper(appUserService.findByIdWithRole(guardianId, RoleEnum.PARENT_HELPER));
+		return penpalRepository.save(p);
+	}
+
+	public Penpal findById (Long id) {
+		return penpalRepository.findById(id)
+			.orElseThrow(() -> new IllegalArgumentException("No user with id " + id));
+	}
+
+	public Penpal findByIdForGuardian(Long penpalId, Long guardianId) {
+		return penpalRepository.findByIdAndParentHelperId(penpalId, guardianId)
+			.orElseThrow(() -> new AccessDeniedException("Penpal " + penpalId + " is not yours"));
+	}
+
+	public Penpal findByIdForCompanionGuardian(Long penpalId, Long guardianId) {
+		return penpalRepository.findActiveCompanionForGuardian(penpalId, guardianId)
+			.orElseThrow(() -> new AccessDeniedException("No active companion for penpal " + penpalId + " (or not yours)"));
 	}
 
 	///
@@ -81,4 +104,19 @@ public class PenpalService {
 			PenpalBioView.of(self),
 			comp == null ? null : PenpalBioView.of(comp));
 	}
+
+	///
+	///
+	///
+
+	public Penpal updatePenpalForGuardian(Long penpalId, CreatePenpalRequest req, Long guardianId) {
+		Penpal p = findByIdForGuardian(penpalId, guardianId);
+		p.setFirstName(req.firstName());
+		p.setLastName(req.lastName());
+		p.setAge(req.age());
+		p.setState(req.state());
+		p.setBiography(req.biography());
+		return penpalRepository.save(p);
+	}
+
 }

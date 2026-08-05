@@ -24,11 +24,6 @@ public class PenpalController {
 	private final CurrentUserService currentUserService;
 	private final PenpalService penpalService;
 
-	@GetMapping("/me")
-	public UserFullView me (Authentication auth) {
-		return UserFullView.of(currentUserService.require(auth));
-	}
-
 	@GetMapping("/relations")
 	public PenpalMapRelationshipView relations (@RequestAttribute(ActingAsPenpalFilter.ACTIVE_PENPAL_ATTR) Long penpalId) {
 		return penpalService.penpalChatMap(penpalId);

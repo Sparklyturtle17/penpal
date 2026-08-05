@@ -5,6 +5,7 @@ import com.penpals.users.dto.AppUserViews.*;
 import com.penpals.users.penpal.PenpalService;
 import com.penpals.users.dto.CreatePenpalRequest;
 import com.penpals.users.dto.PenpalViews.*;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,13 +22,8 @@ public class AdminController {
 	private final PenpalService penpalService;
 	private final CurrentUserService currentUserService;
 
-	@GetMapping("/me")
-	public UserFullView me(Authentication auth) {
-		return UserFullView.of(currentUserService.require(auth));
-	}
-
 	@PostMapping("/penpals")
-	public UserSummaryView create(@RequestBody CreatePenpalRequest body) {
+	public UserSummaryView create(@Valid @RequestBody CreatePenpalRequest body) {
 		return UserSummaryView.of(penpalService.createPenpal(body));
 	}
 
