@@ -1,6 +1,7 @@
 package com.penpals.common.config;
 
 import com.penpals.access.CurrentUserService;
+import com.penpals.users.RoleEnum;
 import com.penpals.users.penpal.PenpalRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,7 +29,7 @@ public class RealSecurityConfig {
 		var acting = new ActingAsPenpalFilter(currentUserService, penpalRepository);
 		http
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+				.requestMatchers("/api/penpal/admins/**").hasRole(RoleEnum.ADMIN.name())
 				.anyRequest().authenticated())
 			.oauth2ResourceServer(o -> o.jwt(jwt -> jwt.jwtAuthenticationConverter(converter())))
 			.csrf(csrf -> csrf.disable())

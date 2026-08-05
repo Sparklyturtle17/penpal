@@ -5,3 +5,9 @@ spring:
         jwt:
           issuer-uri: https://YOUR-TENANT.us.auth0.com/
           audience: https://your-api-identifier
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
