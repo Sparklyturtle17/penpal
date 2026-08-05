@@ -32,7 +32,6 @@ public interface PenpalViews {
 	record PenpalBioView(
 		Long id,
 		String firstName,
-		String lastName,
 		Integer age,
 		State state,
 		String biography
@@ -41,7 +40,6 @@ public interface PenpalViews {
 			return new PenpalBioView(
 				p.getId(),
 				p.getFirstName(),
-				p.getLastName(),
 				p.getAge(),
 				p.getState(),
 				p.getBiography()

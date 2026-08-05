@@ -31,7 +31,7 @@ public class DevSecurityConfig {
 		http
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers("/swagger-ui/**", "/swagger-ui.html",
-					"/v3/api-docs/**", "/h2-console/**").permitAll()
+					"/v3/api-docs/**", "/h2-console/**", "/logout").permitAll()
 				.requestMatchers("/api/penpal/admins/**").hasRole(RoleEnum.ADMIN.name())
 				.anyRequest().authenticated())
 			.httpBasic(withDefaults())

@@ -1,19 +1,16 @@
 package com.penpals.users.penpal;
 
 import com.penpals.users.AppUserService;
-import com.penpals.users.ChatMapRow;
 import com.penpals.users.RoleEnum;
 
-import com.penpals.users.dto.ChatMapView.*;
+import com.penpals.users.dto.AppUserViews.*;
+import com.penpals.users.dto.PenpalViews.*;
+import com.penpals.users.dto.RelationshipsView.*;
 import com.penpals.users.dto.CreatePenpalRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-
 
 @Service
 @RequiredArgsConstructor
@@ -22,12 +19,12 @@ public class PenpalService {
 	private final PenpalRepository penpalRepository;
 	private final AppUserService appUserService;
 
-	public Penpal findById(Long id) {
+	public Penpal findById (Long id) {
 		return penpalRepository.findById(id)
 			.orElseThrow(() -> new IllegalArgumentException("No user with id " + id));
 	}
 
-	public Penpal createPenpal(CreatePenpalRequest req) {
+	public Penpal createPenpal (CreatePenpalRequest req) {
 		Penpal p = new Penpal();
 		p.setFirstName(req.firstName());
 		p.setLastName(req.lastName());
@@ -46,48 +43,42 @@ public class PenpalService {
 		return penpalRepository.save(p);
 	}
 
-	public void delete(Long id) {
-		penpalRepository.deleteById(id);
-	}
+	///
+	/// Relationship views
+	///
 
-	public List<GuardianNode> fullChatMapTree() {
-		Map<Long, String> guardianName = new LinkedHashMap<>();
-		Map<Long, List<PenpalNode>> penpalsByGuardian = new LinkedHashMap<>();
-
-		for (ChatMapRow r : penpalRepository.findCompleteChatMap()) {
-			guardianName.putIfAbsent(r.parentHelperId(), r.parentHelperName());
-			penpalsByGuardian
-				.computeIfAbsent(r.parentHelperId(), k -> new ArrayList<>())
-				.add(new PenpalNode(
-					r.penpalId(), r.penpalName(),
-					new Companion(
-						r.companionId(), r.companionName(),
-						r.companionParentHelperId(), r.companionParentHelperName())));
-		}
-
-		return penpalsByGuardian.entrySet().stream()
-			.map(e -> new GuardianNode(
-				e.getKey(), guardianName.get(e.getKey()), e.getValue()))
+	// MAP 1 — monitor: every active chat, both penpals in admin view
+	public List<MonitorMapRelationshipView> monitorChatMap () {
+		return penpalRepository.findActiveChatPairs().stream()
+			.map(pair -> new MonitorMapRelationshipView (
+				PenpalAdminView.of((Penpal) pair[0]),
+				PenpalAdminView.of((Penpal) pair[1])))
 			.toList();
 	}
 
-	public GuardianNode chatMapForGuardian(Long parentHelperId) {
-		List<PenpalNode> penpals = new ArrayList<>();
-		String guardianName = null;
+	// MAP 2 — parent/helper: their penpals (admin) + each companion (bio), guardian once at the top
+	public GuardianMapRelationshipView guardianChatMap (Long guardianId) {
+		UserFullView guardian = UserFullView.of(appUserService.findById(guardianId));
 
-		for (ChatMapRow r : penpalRepository.findChatMapByParentHelper(parentHelperId)) {
-			guardianName = r.parentHelperName();               // same guardian on every row
-			penpals.add(new PenpalNode(
-				r.penpalId(),
-				r.penpalName(),
-				new Companion(
-					r.companionId(),
-					r.companionName(),
-					null,
-					null
-				)
-			));                              // <-- no companion guardian (g–p–p)
-		}
-		return new GuardianNode(parentHelperId, guardianName, penpals);
+		List<PenpalWithCompanion> penpals =
+			penpalRepository.findAllPenpalsByParentHelperId(guardianId).stream()
+				.map(p -> {
+					Penpal comp = penpalRepository.findActiveChatCompanion(p.getId()).orElse(null);
+					return new PenpalWithCompanion (
+						PenpalAdminView.of(p),
+						comp == null ? null : PenpalBioView.of(comp));
+				})
+				.toList();
+
+		return new GuardianMapRelationshipView(guardian, penpals);
+	}
+
+	// MAP 3 — penpal: self + companion, both bio
+	public PenpalMapRelationshipView penpalChatMap (Long penpalId) {
+		Penpal self = findById(penpalId);
+		Penpal comp = penpalRepository.findActiveChatCompanion(penpalId).orElse(null);
+		return new PenpalMapRelationshipView (
+			PenpalBioView.of(self),
+			comp == null ? null : PenpalBioView.of(comp));
 	}
 }

@@ -12,54 +12,16 @@ public interface PenpalRepository extends JpaRepository<Penpal, Long> {
 
 	List<Penpal> findAllPenpalsByParentHelperId(Long parentHelperId);
 
-	// whole map (for monitors)
+	// each active chat once, as [penpalOne, penpalTwo] with penpalOne.id < penpalTwo.id
 	@Query("""
-	    select new com.penpals.users.ChatMapRow(
-	        h.id,  concat(h.firstName, ' ', h.lastName),
-	        p.id,  concat(p.firstName, ' ', p.lastName),
-	        comp.id, concat(comp.firstName, ' ', comp.lastName),
-	        ch.id, concat(ch.firstName, ' ', ch.lastName))
-	    from Chat c
+	    select p, other from Chat c
 	      join c.members p
-	      join p.parentHelper h
-	      join c.members comp
-	      join comp.parentHelper ch
-	    where comp.id <> p.id
-	    order by h.id, p.id
-	""")
-//	@Query("""
-//	    select new com.penpals.users.ChatMapRow(
-//	        h.id,  concat(h.firstName, ' ', h.lastName),
-//	        p.id,  concat(p.firstName, ' ', p.lastName),
-//	        comp.id, concat(comp.firstName, ' ', comp.lastName),
-//	        ch.id, concat(ch.firstName, ' ', ch.lastName))
-//	    from Chat c
-//	      join c.members p
-//	      join p.parentHelper h
-//	      join c.members comp
-//	      join comp.parentHelper ch
-//	    where p.id < comp.id
-//	    order by h.id, p.id
-//	""")
-	List<ChatMapRow> findCompleteChatMap();
-
-	// only related users (for parent/helpers penpals)
-	@Query("""
-	    select new com.penpals.users.ChatMapRow(
-	        h.id,  concat(h.firstName, ' ', h.lastName),
-	        p.id,  concat(p.firstName, ' ', p.lastName),
-	        comp.id, concat(comp.firstName, ' ', comp.lastName),
-	        ch.id, concat(ch.firstName, ' ', ch.lastName))
-	    from Chat c
-	      join c.members p
-	      join p.parentHelper h
-	      join c.members comp
-	      join comp.parentHelper ch
-	    where h.id = :parentHelperId
-	      and comp.id <> p.id
+	      join c.members other
+	    where p.id < other.id
+	      and c.active = true
 	    order by p.id
 	""")
-	List<ChatMapRow> findChatMapByParentHelper(@Param("parentHelperId") Long parentHelperId);
+	List<Object[]> findActiveChatPairs();
 
 	@Query("select p from Chat c join c.members p where c.id = :chatId")
 	List<Penpal> findPenpalsByChatId(@Param("chatId") Long chatId);
