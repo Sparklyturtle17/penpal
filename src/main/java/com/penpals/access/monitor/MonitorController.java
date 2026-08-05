@@ -1,7 +1,6 @@
 package com.penpals.access.monitor;
 
 import com.penpals.users.dto.AppUserViews.*;
-import com.penpals.users.dto.RelationshipsView;
 import com.penpals.users.dto.RelationshipsView.*;
 import com.penpals.users.penpal.PenpalService;
 import com.penpals.users.dto.CreatePenpalRequest;

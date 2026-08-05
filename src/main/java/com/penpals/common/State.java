@@ -3,13 +3,40 @@ package com.penpals.common;
 import java.time.ZoneId;
 
 /**
- * The 50 US states with a representative time zone.
- * NOTE: ~13 states span two zones; the ZoneId here is the predominant (most-populous) one.
+ * US states (2-letter postal code) and Malawi districts (full name), each with a representative time zone.
+ * Malawi is entirely Africa/Blantyre (CAT, +2, no DST). A few US states span zones (predominant one used).
  */
 public enum State {
-	NORTH("Northern Region",    ZoneId.of("Africa/Johannesburg")),
-	CENTRAL("Central Region",   ZoneId.of("Africa/Johannesburg")),
-	SOUTH("Southern Region",    ZoneId.of("Africa/Johannesburg")),
+
+	// --- Malawi districts (all 28) — zone: Africa/Blantyre ---
+	CHITIPA("Chitipa",       ZoneId.of("Africa/Blantyre")),
+	KARONGA("Karonga",       ZoneId.of("Africa/Blantyre")),
+	RUMPHI("Rumphi",         ZoneId.of("Africa/Blantyre")),
+	NKHATA_BAY("Nkhata Bay", ZoneId.of("Africa/Blantyre")),
+	MZIMBA("Mzimba",         ZoneId.of("Africa/Blantyre")),
+	LIKOMA("Likoma",         ZoneId.of("Africa/Blantyre")),
+	KASUNGU("Kasungu",       ZoneId.of("Africa/Blantyre")),
+	NKHOTAKOTA("Nkhotakota", ZoneId.of("Africa/Blantyre")),
+	NTCHISI("Ntchisi",       ZoneId.of("Africa/Blantyre")),
+	DOWA("Dowa",             ZoneId.of("Africa/Blantyre")),
+	SALIMA("Salima",         ZoneId.of("Africa/Blantyre")),
+	LILONGWE("Lilongwe",     ZoneId.of("Africa/Blantyre")),
+	MCHINJI("Mchinji",       ZoneId.of("Africa/Blantyre")),
+	DEDZA("Dedza",           ZoneId.of("Africa/Blantyre")),
+	NTCHEU("Ntcheu",         ZoneId.of("Africa/Blantyre")),
+	MANGOCHI("Mangochi",     ZoneId.of("Africa/Blantyre")),
+	MACHINGA("Machinga",     ZoneId.of("Africa/Blantyre")),
+	ZOMBA("Zomba",           ZoneId.of("Africa/Blantyre")),
+	CHIRADZULU("Chiradzulu", ZoneId.of("Africa/Blantyre")),
+	BLANTYRE("Blantyre",     ZoneId.of("Africa/Blantyre")),
+	MWANZA("Mwanza",         ZoneId.of("Africa/Blantyre")),
+	THYOLO("Thyolo",         ZoneId.of("Africa/Blantyre")),
+	MULANJE("Mulanje",       ZoneId.of("Africa/Blantyre")),
+	PHALOMBE("Phalombe",     ZoneId.of("Africa/Blantyre")),
+	CHIKWAWA("Chikwawa",     ZoneId.of("Africa/Blantyre")),
+	NSANJE("Nsanje",         ZoneId.of("Africa/Blantyre")),
+	BALAKA("Balaka",         ZoneId.of("Africa/Blantyre")),
+	NENO("Neno",             ZoneId.of("Africa/Blantyre")),
 
 	////////////////////////////////////////////////////////////////////////////////
 

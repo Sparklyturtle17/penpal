@@ -13,12 +13,12 @@ INSERT INTO app_user (id, first_name, last_name, email, phone, whatsapp, role, a
 
 -- Penpal detail rows (same ids as their user rows). One guardian (parent_helper) each:
 --   Alice -> Pat (8), Bob -> Helen (5, the dev 'parent_helper'), Carlos/Diana -> Hugo (6).
--- state = State enum name: US state code (CA, TX) or Malawi region (CENTRAL, SOUTH).
+-- state = State enum name: US state code (CA, TX) or Malawi district (LILONGWE, BLANTYRE).
 INSERT INTO penpal (id, age, state, biography, parent_helper_id) VALUES
-(1, 11, 'CA',      'I like drawing.',  8),
-(2, 12, 'CENTRAL', 'I love football.', 5),
-(3, 10, 'TX',      'I play guitar.',   6),
-(4, 13, 'SOUTH',   'I read a lot.',    6);
+(1, 11, 'CA',       'I like drawing.',  8),
+(2, 12, 'LILONGWE', 'I love football.', 5),
+(3, 10, 'TX',       'I play guitar.',   6),
+(4, 13, 'BLANTYRE', 'I read a lot.',    6);
 
 -- Two chats, each exactly two penpals
 INSERT INTO chat (id, active) VALUES

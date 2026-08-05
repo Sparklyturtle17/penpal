@@ -1,6 +1,5 @@
 package com.penpals.users.penpal;
 
-import com.penpals.users.ChatMapRow;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,9 +21,6 @@ public interface PenpalRepository extends JpaRepository<Penpal, Long> {
 	    order by p.id
 	""")
 	List<Object[]> findActiveChatPairs();
-
-	@Query("select p from Chat c join c.members p where c.id = :chatId")
-	List<Penpal> findPenpalsByChatId(@Param("chatId") Long chatId);
 
 	@Query("""
         select other from Chat c
