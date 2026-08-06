@@ -109,8 +109,10 @@ public final class SeedData {
 	// guardians / monitor / admin
 	public static final AppUser HELEN = user(5, "Helen", "Hale",   "helen@example.com", "555", "555", RoleEnum.PARENT_HELPER, "parent_helper");
 	public static final AppUser HUGO  = user(6, "Hugo",  "Hunt",   "hugo@example.com",  "666", "666", RoleEnum.PARENT_HELPER, "parent_helper_2");
+	public static final AppUser PAT   = user(8, "Pat",   "Parker", "pat@example.com",   "888", "888", RoleEnum.PARENT_HELPER, "parent_helper_3");
+
 	public static final AppUser MONA  = user(7, "Mona",  "Moore",  "mona@example.com",  "777", "777", RoleEnum.MONITOR,       "monitor");
-	public static final AppUser PAT   = user(8, "Pat",   "Parker", "pat@example.com",   "888", "888", RoleEnum.PARENT_HELPER, null);
+
 	public static final AppUser ADAM  = user(9, "Adam",  "Ash",    "adam@example.com",  "999", "999", RoleEnum.ADMIN,         "admin");
 
 	// penpals (parentHelper points at the real guardian entity above)

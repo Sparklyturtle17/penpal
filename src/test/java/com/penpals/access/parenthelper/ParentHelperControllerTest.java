@@ -6,7 +6,6 @@ import com.penpals.users.dto.AppUserViews.*;
 import com.penpals.users.dto.CreatePenpalRequest;
 import com.penpals.users.dto.PenpalViews.*;
 import com.penpals.users.dto.RelationshipsView.*;
-import com.penpals.users.penpal.Penpal;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
@@ -146,17 +145,29 @@ public class ParentHelperControllerTest extends ControllerTestBase {
 	}
 
 	@Test
-	void parentHelper_readsRelationshipMap_ParentHelperOnlyScope() throws Exception {
+	void parentHelper_readsRelationshipMap_scopeAndViews() throws Exception {
 		mockMvc.perform(get("/api/penpal/parent-helpers/my-penpals-companions")
-				.with(httpBasic(HUGO.getAuthId(), HUGO.getAuthId())))
+				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.guardian.id").value(HUGO.getId()))
-			// sees exactly his own penpals — Carlos (3) and Diana (4), no more, no fewer
-			.andExpect(jsonPath("$.penpals[*].penpal.id",
-				containsInAnyOrder(CARLOS.getId().intValue(), DIANA.getId().intValue())))
-			// and NOT Helen's penpal Bob (2)
-			.andExpect(jsonPath("$.penpals[*].penpal.id",
-				not(hasItem(BOB.getId().intValue()))));
+			.andExpect(jsonPath("$.guardian.id").value(HELEN.getId()))
+
+			// includes their penpal (Bob) …
+			.andExpect(jsonPath("$.penpals[*].penpal.id", hasItem(BOB.getId().intValue())))
+			// … and NOT an unrelated penpal (Carlos)
+			.andExpect(jsonPath("$.penpals[*].penpal.id", not(hasItem(CARLOS.getId().intValue()))))
+
+			// the companion (Alice) shows up as a COMPANION, not a penpal
+			.andExpect(jsonPath("$.penpals[*].companion.id", hasItem(ALICE.getId().intValue())))
+
+			// penpal (Bob) has ADMIN view: full fields + nested guardian
+			.andExpect(jsonPath("$.penpals[0].penpal.lastName").value(BOB.getLastName()))
+			.andExpect(jsonPath("$.penpals[0].penpal.parentHelper.id").value(HELEN.getId()))
+			.andExpect(jsonPath("$.penpals[0].penpal.parentHelper.email").value(HELEN.getEmail()))
+
+			// companion (Alice) has BIO view: reduced — no lastName, no email, no guardian
+			.andExpect(jsonPath("$.penpals[0].companion.firstName").value(ALICE.getFirstName()))
+			.andExpect(jsonPath("$.penpals[0].companion.lastName").doesNotExist())
+			.andExpect(jsonPath("$.penpals[0].companion.parentHelper").doesNotExist());
 	}
 
 	@Test

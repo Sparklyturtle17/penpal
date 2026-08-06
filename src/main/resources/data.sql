@@ -8,7 +8,7 @@ INSERT INTO app_user (id, first_name, last_name, email, phone, whatsapp, role, a
 (5, 'Helen',  'Hale',   'helen@example.com',  '555', '555', 'PARENT_HELPER', 'parent_helper'),
 (6, 'Hugo',   'Hunt',   'hugo@example.com',   '666', '666', 'PARENT_HELPER', 'parent_helper_2'),
 (7, 'Mona',   'Moore',  'mona@example.com',   '777', '777', 'MONITOR',       'monitor'),
-(8, 'Pat',    'Parker', 'pat@example.com',    '888', '888', 'PARENT_HELPER', NULL),
+(8, 'Pat',    'Parker', 'pat@example.com',    '888', '888', 'PARENT_HELPER', 'parent_helper_3'),
 (9, 'Adam',   'Ash',    'adam@example.com',   '999', '999', 'ADMIN',         'admin');
 
 -- Penpal detail rows (same ids as their user rows). One guardian (parent_helper) each:
