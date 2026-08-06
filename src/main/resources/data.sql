@@ -43,3 +43,10 @@ INSERT INTO message_audit
 (1, '2026-07-01 09:02:00', 1, 1, 'Hi Bob',     1, 8, '2026-07-01 09:00:00', 1, NULL, NULL, NULL),
 (2, '2026-07-01 10:05:00', 5, 2, 'Hey Alice',  2, 5, '2026-07-01 10:00:00', 1, NULL, NULL, NULL),
 (3, '2026-07-02 14:20:00', 7, 3, 'Hola Diana', 3, 6, '2026-07-02 14:00:00', 2, TRUE, 7,    '2026-07-02 14:10:00');
+
+-- Seed rows above use explicit ids; H2 does not advance the IDENTITY counter for
+-- explicit inserts, so restart each generated-id table clear of the seeded values.
+ALTER TABLE app_user     ALTER COLUMN id       RESTART WITH 100;
+ALTER TABLE chat         ALTER COLUMN id       RESTART WITH 100;
+ALTER TABLE message      ALTER COLUMN id       RESTART WITH 100;
+ALTER TABLE message_audit ALTER COLUMN audit_id RESTART WITH 100;

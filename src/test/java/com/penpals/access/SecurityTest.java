@@ -24,13 +24,15 @@ public class SecurityTest extends ControllerTestBase {
 
 	@Test
 	void protectedEndpoint_badPassword_is401() throws Exception {
-		mockMvc.perform(get("/api/users/me").with(httpBasic("admin", "wrong")))
+		mockMvc.perform(get("/api/users/me")
+				.with(httpBasic("admin", "wrong")))
 			.andExpect(status().isUnauthorized());
 	}
 
 	@Test
 	void protectedEndpoint_validCredentials_is200() throws Exception {
-		mockMvc.perform(get("/api/users/me").with(httpBasic("admin", "admin")))
+		mockMvc.perform(get("/api/users/me")
+				.with(httpBasic("admin", "admin")))
 			.andExpect(status().isOk());
 	}
 

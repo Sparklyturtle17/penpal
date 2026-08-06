@@ -1,5 +1,6 @@
 package com.penpals.users;
 
+import com.penpals.common.exceptions.NotFoundException;
 import com.penpals.users.dto.CreateAppUserRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,7 @@ public class AppUserService {
 
 	public AppUser findById(Long id) {
 		return appUserRepository.findById(id)
-			.orElseThrow(() -> new IllegalArgumentException("No user with id " + id));
+			.orElseThrow(() -> new NotFoundException("No user with id " + id));
 	}
 
 	public AppUser findByIdWithRole(Long id, RoleEnum expectedRole) {

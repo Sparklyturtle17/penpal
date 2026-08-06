@@ -1,19 +1,23 @@
 package com.penpals.access.parenthelper;
 
 import com.penpals.access.CurrentUserService;
+import com.penpals.common.ApiResponses;
 import com.penpals.users.dto.AppUserViews.*;
 import com.penpals.users.dto.RelationshipsView.*;
+import com.penpals.users.penpal.Penpal;
 import com.penpals.users.penpal.PenpalService;
 import com.penpals.users.dto.CreatePenpalRequest;
 import com.penpals.users.dto.PenpalViews.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/penpal/parent_helpers")
+@RequestMapping("/api/penpal/parent-helpers")
 @PreAuthorize("hasAnyRole('PARENT_HELPER')")
 @Slf4j
 @RequiredArgsConstructor
@@ -23,9 +27,9 @@ public class ParentHelperController {
 	private final CurrentUserService currentUserService;
 
 	@PostMapping("/my-penpals")
-	public PenpalAdminView create(@Valid @RequestBody CreatePenpalRequest body) {
-		return PenpalAdminView.of(
-			penpalService.createPenpalForGuardian(body, currentUserService.currentId()));
+	public ResponseEntity<Void> create(@Valid @RequestBody CreatePenpalRequest body) {
+		Penpal created = penpalService.createPenpalForGuardian(body, currentUserService.currentId());
+		return ApiResponses.created(created.getId());
 	}
 
 	@GetMapping("/my-penpals-companions")

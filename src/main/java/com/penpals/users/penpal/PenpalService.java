@@ -1,5 +1,6 @@
 package com.penpals.users.penpal;
 
+import com.penpals.common.exceptions.NotFoundException;
 import com.penpals.users.AppUserService;
 import com.penpals.users.RoleEnum;
 
@@ -40,6 +41,12 @@ public class PenpalService {
 	}
 
 	public Penpal createPenpalForGuardian(CreatePenpalRequest req, Long guardianId) {
+		// A parent/helper may only create penpals under themselves: no assigning
+		// another guardian, no minting a new one (that's a monitor/admin action).
+		if (req.parentHelper() != null || (req.parentHelperId() != null && !req.parentHelperId().equals(guardianId))) {
+			throw new AccessDeniedException("You can only create penpals under yourself");
+		}
+
 		Penpal p = new Penpal();
 		p.setFirstName(req.firstName());
 		p.setLastName(req.lastName());
@@ -48,12 +55,13 @@ public class PenpalService {
 		p.setBiography(req.biography());
 		p.setRole(RoleEnum.PENPAL);
 		p.setParentHelper(appUserService.findByIdWithRole(guardianId, RoleEnum.PARENT_HELPER));
+
 		return penpalRepository.save(p);
 	}
 
 	public Penpal findById (Long id) {
 		return penpalRepository.findById(id)
-			.orElseThrow(() -> new IllegalArgumentException("No user with id " + id));
+			.orElseThrow(() -> new NotFoundException("No penpal with id " + id));
 	}
 
 	public Penpal findByIdForGuardian(Long penpalId, Long guardianId) {
@@ -100,6 +108,7 @@ public class PenpalService {
 	public PenpalMapRelationshipView penpalChatMap (Long penpalId) {
 		Penpal self = findById(penpalId);
 		Penpal comp = penpalRepository.findActiveChatCompanion(penpalId).orElse(null);
+
 		return new PenpalMapRelationshipView (
 			PenpalBioView.of(self),
 			comp == null ? null : PenpalBioView.of(comp));
