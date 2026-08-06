@@ -48,8 +48,9 @@ public class ParentHelperController {
 	}
 
 	@PutMapping("/my-penpals/{id}")
-	public PenpalAdminView update(@PathVariable Long id, @Valid @RequestBody CreatePenpalRequest body) {
-		return PenpalAdminView.of(penpalService.updatePenpalForGuardian(id, body, currentUserService.currentId()));
+	public ResponseEntity<Void> update(@PathVariable Long id, @Valid @RequestBody CreatePenpalRequest body) {
+		penpalService.updatePenpalForGuardian(id, body, currentUserService.currentId());
+		return ResponseEntity.noContent().build();
 	}
 
 }

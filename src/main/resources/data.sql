@@ -6,7 +6,7 @@ INSERT INTO app_user (id, first_name, last_name, email, phone, whatsapp, role, a
 (3, 'Carlos', 'Cruz',   'carlos@example.com', '333', '333', 'PENPAL',        NULL),
 (4, 'Diana',  'Diaz',   'diana@example.com',  '444', '444', 'PENPAL',        NULL),
 (5, 'Helen',  'Hale',   'helen@example.com',  '555', '555', 'PARENT_HELPER', 'parent_helper'),
-(6, 'Hugo',   'Hunt',   'hugo@example.com',   '666', '666', 'PARENT_HELPER', NULL),
+(6, 'Hugo',   'Hunt',   'hugo@example.com',   '666', '666', 'PARENT_HELPER', 'parent_helper_2'),
 (7, 'Mona',   'Moore',  'mona@example.com',   '777', '777', 'MONITOR',       'monitor'),
 (8, 'Pat',    'Parker', 'pat@example.com',    '888', '888', 'PARENT_HELPER', NULL),
 (9, 'Adam',   'Ash',    'adam@example.com',   '999', '999', 'ADMIN',         'admin');
