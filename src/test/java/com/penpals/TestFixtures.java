@@ -29,7 +29,7 @@ public final class TestFixtures {
 			new CreatePenpalRequest("Larry", "Sienfeld", 10, State.VT, "Haha!", 6L, null);
 
 		public static final CreatePenpalRequest PENPAL_D =
-			new CreatePenpalRequest("Joshua", "Abbot", 9, State.CA, "Lets go camping", null, Users.PARENT_HELPER_A);
+			new CreatePenpalRequest("Joshua", "Abbot", 9, State.CA, "", null, Users.PARENT_HELPER_A);
 	}
 
 	// Add these once the DTOs exist:

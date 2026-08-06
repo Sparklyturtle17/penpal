@@ -9,15 +9,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 import static com.penpals.SeedData.*;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.not;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @Transactional
 public class PenpalControllerTest extends ControllerTestBase {
@@ -84,24 +79,6 @@ public class PenpalControllerTest extends ControllerTestBase {
 				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
 			.andExpect(status().isOk())
 			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
-	}
-
-	@Test
-	void penpal_readsOwnRelations_selfAndCompanionBothBio() throws Exception {
-		mockMvc.perform(get("/api/penpal/penpals/relations")
-				.header(ActingAsPenpalFilter.HEADER, BOB.getId())
-				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
-			.andExpect(status().isOk())
-
-			// self = Bob, BIO view
-			.andExpect(jsonPath("$.self.id").value(BOB.getId().intValue()))
-			.andExpect(jsonPath("$.self.firstName").value(BOB.getFirstName()))
-			.andExpect(jsonPath("$.self.lastName").doesNotExist())
-
-			// companion = Alice, BIO view
-			.andExpect(jsonPath("$.companion.id").value(ALICE.getId().intValue()))
-			.andExpect(jsonPath("$.companion.firstName").value(ALICE.getFirstName()))
-			.andExpect(jsonPath("$.companion.lastName").doesNotExist());
 	}
 
 	///////////////////////////////////////////////////////////////

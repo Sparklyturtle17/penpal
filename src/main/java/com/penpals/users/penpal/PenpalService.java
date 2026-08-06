@@ -9,6 +9,7 @@ import com.penpals.users.dto.PenpalViews.*;
 import com.penpals.users.dto.RelationshipsView.*;
 import com.penpals.users.dto.CreatePenpalRequest;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -29,15 +30,10 @@ public class PenpalService {
 		p.setState(req.state());
 		p.setBiography(req.biography());
 		p.setRole(RoleEnum.PENPAL);
-		if (req.parentHelperId() != null) {
-			p.setParentHelper(appUserService.findByIdWithRole(req.parentHelperId(), RoleEnum.PARENT_HELPER));
-		} else if (req.parentHelper() != null) {
-			p.setParentHelper(appUserService.createParentHelper(req.parentHelper()));
-		} else {
-			throw new IllegalArgumentException("A penpal must have a parent / helper");
-		}
-
-		return penpalRepository.save(p);
+		return setOrCreateParentHelper(
+			req,
+			p
+		);
 	}
 
 	public Penpal createPenpalForGuardian(CreatePenpalRequest req, Long guardianId) {
@@ -119,12 +115,46 @@ public class PenpalService {
 	///
 
 	public Penpal updatePenpalForGuardian(Long penpalId, CreatePenpalRequest req, Long guardianId) {
+		if (req.parentHelperId() != null || req.parentHelper() != null) {
+			throw new AccessDeniedException("Parent helpers cannot reassign penpals.");
+		}
+
 		Penpal p = findByIdForGuardian(penpalId, guardianId);
 		p.setFirstName(req.firstName());
 		p.setLastName(req.lastName());
 		p.setAge(req.age());
 		p.setState(req.state());
 		p.setBiography(req.biography());
+		return penpalRepository.save(p);
+	}
+
+	public Penpal reassignPenpal(Long penpalId, CreatePenpalRequest req) {
+
+		Penpal p = findById(penpalId);
+
+		return setOrCreateParentHelper(req, p);
+	}
+
+	public Penpal updatePenpalForMonitor(Long penpalId, CreatePenpalRequest req) {
+
+		Penpal p = findById(penpalId);
+		p.setFirstName(req.firstName());
+		p.setLastName(req.lastName());
+		p.setAge(req.age());
+		p.setState(req.state());
+		p.setBiography(req.biography());
+		return setOrCreateParentHelper(req, p);
+	}
+
+	@NonNull
+	private Penpal setOrCreateParentHelper(CreatePenpalRequest req, Penpal p) {
+		if (req.parentHelperId() != null) {
+			p.setParentHelper(appUserService.findByIdWithRole(req.parentHelperId(), RoleEnum.PARENT_HELPER));
+		} else if (req.parentHelper() != null) {
+			p.setParentHelper(appUserService.createParentHelper(req.parentHelper()));
+		} else {
+			throw new IllegalArgumentException("A penpal must have a parent / helper");
+		}
 		return penpalRepository.save(p);
 	}
 

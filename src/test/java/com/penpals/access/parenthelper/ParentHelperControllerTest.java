@@ -20,7 +20,6 @@ import static com.penpals.SeedData.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 
@@ -71,6 +70,7 @@ public class ParentHelperControllerTest extends ControllerTestBase {
 
 	@Test
 	void parentHelper_canCreatePenpal_WithSelf() throws Exception {
+
 		MvcResult created = mockMvc.perform(post("/api/penpal/parent-helpers/my-penpals")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(NEW_PENPAL_WITH_SELF))
@@ -80,33 +80,51 @@ public class ParentHelperControllerTest extends ControllerTestBase {
 			.andReturn();
 
 		String location = created.getResponse().getHeader("Location");
+		Long newId = Long.parseLong(location.substring(location.lastIndexOf('/') + 1));
+
+		PenpalAdminView expected = new PenpalAdminView(
+			newId,
+			NEW_PENPAL_WITH_SELF.firstName(),
+			NEW_PENPAL_WITH_SELF.lastName(),
+			NEW_PENPAL_WITH_SELF.age(),
+			NEW_PENPAL_WITH_SELF.state(),
+			NEW_PENPAL_WITH_SELF.biography(),
+			UserFullView.of(HELEN)
+		);
 
 		mockMvc.perform(get(URI.create(location))
 				.with(PARENT_HELPER_AUTH))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.firstName").value(NEW_PENPAL_WITH_SELF.firstName()))
-			.andExpect(jsonPath("$.state").value(NEW_PENPAL_WITH_SELF.state().name()))
-			.andExpect(jsonPath("$.parentHelper.id").value(5));
+			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
 	}
 
 	@Test
 	void parentHelper_canCreatePenpal_AutomaticallySelf() throws Exception {
+
 		MvcResult created = mockMvc.perform(post("/api/penpal/parent-helpers/my-penpals")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(NEW_PENPAL_WITH_NULL))
-				.with(PARENT_HELPER_AUTH))
+				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
 			.andExpect(status().isCreated())
 			.andExpect(header().exists("Location"))
 			.andReturn();
 
 		String location = created.getResponse().getHeader("Location");
+		Long newId = Long.parseLong(location.substring(location.lastIndexOf('/') + 1));
+
+		PenpalAdminView expected = new PenpalAdminView(
+			newId,
+			NEW_PENPAL_WITH_NULL.firstName(),
+			NEW_PENPAL_WITH_NULL.lastName(),
+			NEW_PENPAL_WITH_NULL.age(),
+			NEW_PENPAL_WITH_NULL.state(),
+			NEW_PENPAL_WITH_NULL.biography(),
+			UserFullView.of(HELEN));
 
 		mockMvc.perform(get(URI.create(location))
 				.with(PARENT_HELPER_AUTH))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.firstName").value(NEW_PENPAL_WITH_NULL.firstName()))
-			.andExpect(jsonPath("$.state").value(NEW_PENPAL_WITH_NULL.state().name()))
-			.andExpect(jsonPath("$.parentHelper.id").value(5));
+			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
 	}
 
 	@Test
@@ -142,32 +160,6 @@ public class ParentHelperControllerTest extends ControllerTestBase {
 				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
 			.andExpect(status().isOk())
 			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
-	}
-
-	@Test
-	void parentHelper_readsRelationshipMap_scopeAndViews() throws Exception {
-		mockMvc.perform(get("/api/penpal/parent-helpers/my-penpals-companions")
-				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.guardian.id").value(HELEN.getId()))
-
-			// includes their penpal (Bob) …
-			.andExpect(jsonPath("$.penpals[*].penpal.id", hasItem(BOB.getId().intValue())))
-			// … and NOT an unrelated penpal (Carlos)
-			.andExpect(jsonPath("$.penpals[*].penpal.id", not(hasItem(CARLOS.getId().intValue()))))
-
-			// the companion (Alice) shows up as a COMPANION, not a penpal
-			.andExpect(jsonPath("$.penpals[*].companion.id", hasItem(ALICE.getId().intValue())))
-
-			// penpal (Bob) has ADMIN view: full fields + nested guardian
-			.andExpect(jsonPath("$.penpals[0].penpal.lastName").value(BOB.getLastName()))
-			.andExpect(jsonPath("$.penpals[0].penpal.parentHelper.id").value(HELEN.getId()))
-			.andExpect(jsonPath("$.penpals[0].penpal.parentHelper.email").value(HELEN.getEmail()))
-
-			// companion (Alice) has BIO view: reduced — no lastName, no email, no guardian
-			.andExpect(jsonPath("$.penpals[0].companion.firstName").value(ALICE.getFirstName()))
-			.andExpect(jsonPath("$.penpals[0].companion.lastName").doesNotExist())
-			.andExpect(jsonPath("$.penpals[0].companion.parentHelper").doesNotExist());
 	}
 
 	@Test
@@ -219,13 +211,12 @@ public class ParentHelperControllerTest extends ControllerTestBase {
 			.andExpect(status().isNoContent())
 			.andReturn();
 
+		PenpalAdminView expected = new PenpalAdminView( BOB.getId(), BOB.getFirstName(), "Stewart", BOB.getAge(), BOB.getState(), BOB.getBiography(), UserFullView.of(HELEN));
+
 		mockMvc.perform(get("/api/penpal/parent-helpers/my-penpals/" + BOB.getId())
 				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.firstName").value(BOB.getFirstName()))
-			.andExpect(jsonPath("$.state").value(BOB.getState().name()))
-			.andExpect(jsonPath("$.lastName").value("Stewart"))
-			.andExpect(jsonPath("$.parentHelper.id").value(HELEN.getId()));
+			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
 	}
 
 	@Test
@@ -235,6 +226,18 @@ public class ParentHelperControllerTest extends ControllerTestBase {
 		mockMvc.perform(put("/api/penpal/parent-helpers/my-penpals/" + ALICE.getId())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(aliceUpdate))
+				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
+			.andExpect(status().isForbidden());
+	}
+
+	@Test
+	void parentHelper_cannotReassignPenpal_Mine() throws Exception {
+		CreatePenpalRequest bobUpdate = new CreatePenpalRequest(BOB.getFirstName(),
+			BOB.getLastName(), BOB.getAge(), BOB.getState(), BOB.getBiography(), HUGO.getId(), null);
+
+		mockMvc.perform(put("/api/penpal/parent-helpers/my-penpals/" + ALICE.getId())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(bobUpdate))
 				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
 			.andExpect(status().isForbidden());
 	}

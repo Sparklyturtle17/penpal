@@ -1,15 +1,15 @@
 -- Users: 4 penpals, 3 parent-helpers (guardians), 1 monitor, 1 admin.
 -- auth_id matches the dev in-memory usernames so /me resolves in dev.
 INSERT INTO app_user (id, first_name, last_name, email, phone, whatsapp, role, auth_id) VALUES
-(1, 'Alice',  'Anders', 'alice@example.com',  '111', '111', 'PENPAL',        'penpal'),
-(2, 'Bob',    'Brown',  'bob@example.com',    '222', '222', 'PENPAL',        NULL),
-(3, 'Carlos', 'Cruz',   'carlos@example.com', '333', '333', 'PENPAL',        NULL),
-(4, 'Diana',  'Diaz',   'diana@example.com',  '444', '444', 'PENPAL',        NULL),
-(5, 'Helen',  'Hale',   'helen@example.com',  '555', '555', 'PARENT_HELPER', 'parent_helper'),
-(6, 'Hugo',   'Hunt',   'hugo@example.com',   '666', '666', 'PARENT_HELPER', 'parent_helper_2'),
-(7, 'Mona',   'Moore',  'mona@example.com',   '777', '777', 'MONITOR',       'monitor'),
-(8, 'Pat',    'Parker', 'pat@example.com',    '888', '888', 'PARENT_HELPER', 'parent_helper_3'),
-(9, 'Adam',   'Ash',    'adam@example.com',   '999', '999', 'ADMIN',         'admin');
+(1, 'Alice',  'Anders', 'alice@example.com',  '+14155550001', '+14155550001', 'PENPAL',        'penpal'),
+(2, 'Bob',    'Brown',  'bob@example.com',    '+14155550002', '+14155550002', 'PENPAL',        NULL),
+(3, 'Carlos', 'Cruz',   'carlos@example.com', '+14155550003', '+14155550003', 'PENPAL',        NULL),
+(4, 'Diana',  'Diaz',   'diana@example.com',  '+14155550004', '+14155550004', 'PENPAL',        NULL),
+(5, 'Helen',  'Hale',   'helen@example.com',  '+14155550005', '+14155550005', 'PARENT_HELPER', 'parent_helper'),
+(6, 'Hugo',   'Hunt',   'hugo@example.com',   '+14155550006', '+14155550006', 'PARENT_HELPER', 'parent_helper_2'),
+(7, 'Mona',   'Moore',  'mona@example.com',   '+14155550007', '+14155550007', 'MONITOR',       'monitor'),
+(8, 'Pat',    'Parker', 'pat@example.com',    '+14155550008', '+14155550008', 'PARENT_HELPER', 'parent_helper_3'),
+(9, 'Adam',   'Ash',    'adam@example.com',   '+14155550009', '+14155550009', 'ADMIN',         'admin');
 
 -- Penpal detail rows (same ids as their user rows). One guardian (parent_helper) each:
 --   Alice -> Pat (8), Bob -> Helen (5, the dev 'parent_helper'), Carlos/Diana -> Hugo (6).

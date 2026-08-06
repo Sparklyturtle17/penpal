@@ -7,6 +7,7 @@ import com.penpals.common.State;
 import com.penpals.users.AppUser;
 import com.penpals.users.RoleEnum;
 import com.penpals.users.dto.CreatePenpalRequest;
+import com.penpals.users.dto.PenpalViews.*;
 import com.penpals.users.penpal.Penpal;
 
 import java.time.Instant;
@@ -107,19 +108,19 @@ public final class SeedData {
 	}
 
 	// guardians / monitor / admin
-	public static final AppUser HELEN = user(5, "Helen", "Hale",   "helen@example.com", "555", "555", RoleEnum.PARENT_HELPER, "parent_helper");
-	public static final AppUser HUGO  = user(6, "Hugo",  "Hunt",   "hugo@example.com",  "666", "666", RoleEnum.PARENT_HELPER, "parent_helper_2");
-	public static final AppUser PAT   = user(8, "Pat",   "Parker", "pat@example.com",   "888", "888", RoleEnum.PARENT_HELPER, "parent_helper_3");
+	public static final AppUser HELEN = user(5, "Helen", "Hale",   "helen@example.com", "+14155550005", "+14155550005", RoleEnum.PARENT_HELPER, "parent_helper");
+	public static final AppUser HUGO  = user(6, "Hugo",  "Hunt",   "hugo@example.com",  "+14155550006", "+14155550006", RoleEnum.PARENT_HELPER, "parent_helper_2");
+	public static final AppUser PAT   = user(8, "Pat",   "Parker", "pat@example.com",   "+14155550008", "+14155550008", RoleEnum.PARENT_HELPER, "parent_helper_3");
 
-	public static final AppUser MONA  = user(7, "Mona",  "Moore",  "mona@example.com",  "777", "777", RoleEnum.MONITOR,       "monitor");
+	public static final AppUser MONA  = user(7, "Mona",  "Moore",  "mona@example.com",  "+14155550007", "+14155550007", RoleEnum.MONITOR,       "monitor");
 
-	public static final AppUser ADAM  = user(9, "Adam",  "Ash",    "adam@example.com",  "999", "999", RoleEnum.ADMIN,         "admin");
+	public static final AppUser ADAM  = user(9, "Adam",  "Ash",    "adam@example.com",  "+14155550009", "+14155550009", RoleEnum.ADMIN,         "admin");
 
 	// penpals (parentHelper points at the real guardian entity above)
-	public static final Penpal ALICE  = penpal(1, "Alice",  "Anders", "alice@example.com",  "111", "111", "penpal", 11, State.CA,       "I like drawing.",  PAT);
-	public static final Penpal BOB    = penpal(2, "Bob",    "Brown",  "bob@example.com",    "222", "222", null,     12, State.LILONGWE, "I love football.", HELEN);
-	public static final Penpal CARLOS = penpal(3, "Carlos", "Cruz",   "carlos@example.com", "333", "333", null,     10, State.TX,       "I play guitar.",   HUGO);
-	public static final Penpal DIANA  = penpal(4, "Diana",  "Diaz",   "diana@example.com",  "444", "444", null,     13, State.BLANTYRE, "I read a lot.",    HUGO);
+	public static final Penpal ALICE  = penpal(1, "Alice",  "Anders", "alice@example.com",  "+14155550001", "+14155550001", "penpal", 11, State.CA,       "I like drawing.",  PAT);
+	public static final Penpal BOB    = penpal(2, "Bob",    "Brown",  "bob@example.com",    "+14155550002", "+14155550002", null,     12, State.LILONGWE, "I love football.", HELEN);
+	public static final Penpal CARLOS = penpal(3, "Carlos", "Cruz",   "carlos@example.com", "+14155550003", "+14155550003", null,     10, State.TX,       "I play guitar.",   HUGO);
+	public static final Penpal DIANA  = penpal(4, "Diana",  "Diaz",   "diana@example.com",  "+14155550004", "+14155550004", null,     13, State.BLANTYRE, "I read a lot.",    HUGO);
 
 	// chats: each exactly two penpals
 	public static final Chat CHAT_1 = chat(1, true, ALICE, BOB);    // Alice <-> Bob
