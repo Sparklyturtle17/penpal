@@ -3,7 +3,6 @@ package com.penpals.access.monitor;
 import com.penpals.ControllerTestBase;
 import com.penpals.common.config.ActingAsPenpalFilter;
 import com.penpals.users.RoleEnum;
-import com.penpals.users.dto.AppUserViews;
 import com.penpals.users.dto.AppUserViews.*;
 import com.penpals.users.dto.CreateAppUserRequest;
 import com.penpals.users.dto.CreatePenpalRequest;
@@ -34,7 +33,7 @@ public class MonitorControllerTest extends ControllerTestBase {
 	CreatePenpalRequest NEW_PENPAL_WITH_NULL_PARENT_HELPER = PENPAL_A;
 	CreatePenpalRequest NEW_PENPAL_WITH_EXISTING_PARENT_HELPER = PENPAL_C;
 	CreatePenpalRequest NEW_PENPAL_WITH_NEW_PARENT_HELPER = PENPAL_D;
-	CreateAppUserRequest NEW_PARENT_HELPER = PARENT_HELPER_A;
+	CreateAppUserRequest NEW_PARENT_HELPER = APP_USER_A;
 
 	///////////////////////////////////////////////////////////////
 	// AUTH
@@ -91,7 +90,7 @@ public class MonitorControllerTest extends ControllerTestBase {
 			NEW_PENPAL_WITH_EXISTING_PARENT_HELPER.age(),
 			NEW_PENPAL_WITH_EXISTING_PARENT_HELPER.state(),
 			NEW_PENPAL_WITH_EXISTING_PARENT_HELPER.biography(),
-			AppUserViews.UserFullView.of(HUGO)
+			UserFullView.of(HUGO)
 		);
 
 		mockMvc.perform(get(URI.create(location))
@@ -182,7 +181,7 @@ public class MonitorControllerTest extends ControllerTestBase {
 	// READ
 
 	@Test
-	void parentHelper_readsRelationshipMap() throws Exception {
+	void monitor_readsRelationshipMap() throws Exception {
 		List<MonitorMapRelationshipView> expected = List.of(
 			new MonitorMapRelationshipView(PenpalAdminView.of(ALICE), PenpalAdminView.of(BOB)),
 			new MonitorMapRelationshipView(PenpalAdminView.of(CARLOS), PenpalAdminView.of(DIANA)));
@@ -194,7 +193,27 @@ public class MonitorControllerTest extends ControllerTestBase {
 	}
 
 	@Test
-	void parentHelper_readsPenpal() throws Exception {
+	void monitor_readsAllUsers() throws Exception {
+		// ordered by role
+		List<UserFullView> expected = List.of(
+			UserFullView.of(ADAM),    // ADMIN
+			UserFullView.of(MONA),    // MONITOR
+			UserFullView.of(HELEN),   // PARENT_HELPER
+			UserFullView.of(HUGO),
+			UserFullView.of(PAT),
+			UserFullView.of(ALICE),   // PENPAL
+			UserFullView.of(BOB),
+			UserFullView.of(CARLOS),
+			UserFullView.of(DIANA));
+
+		mockMvc.perform(get("/api/penpal/monitors/all-users")
+				.with(MONITOR_AUTH))
+			.andExpect(status().isOk())
+			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
+	}
+
+	@Test
+	void monitor_readsPenpal() throws Exception {
 		var expected = PenpalAdminView.of(BOB);
 
 		mockMvc.perform(get("/api/penpal/monitors/penpals/" + BOB.getId())
@@ -205,7 +224,7 @@ public class MonitorControllerTest extends ControllerTestBase {
 	}
 
 	@Test
-	void parentHelper_readsParentHelper() throws Exception {
+	void monitor_readsParentHelper() throws Exception {
 		var expected = UserFullView.of(HUGO);
 
 		mockMvc.perform(get("/api/penpal/monitors/parent-helpers/" + HUGO.getId())
@@ -216,7 +235,7 @@ public class MonitorControllerTest extends ControllerTestBase {
 	}
 
 	@Test
-	void parentHelper_readsMonitor() throws Exception {
+	void monitor_readsMonitor() throws Exception {
 		var expected = UserFullView.of(MONA);
 
 		mockMvc.perform(get("/api/penpal/monitors/monitors/" + MONA.getId())
@@ -227,7 +246,7 @@ public class MonitorControllerTest extends ControllerTestBase {
 	}
 
 	@Test
-	void parentHelper_readsAdmin() throws Exception {
+	void monitor_readsAdmin() throws Exception {
 		var expected = UserFullView.of(ADAM);
 
 		mockMvc.perform(get("/api/penpal/monitors/admins/" + ADAM.getId())
@@ -307,7 +326,7 @@ public class MonitorControllerTest extends ControllerTestBase {
 	}
 
 	@Test
-	void parentHelper_canUpdatePenpal() throws Exception {
+	void monitor_canUpdatePenpal() throws Exception {
 		CreatePenpalRequest bobUpdate = new CreatePenpalRequest(BOB.getFirstName(), "Stewart", BOB.getAge(), BOB.getState(), BOB.getBiography(), BOB.getParentHelper().getId(), null);
 
 		mockMvc.perform(put("/api/penpal/monitors/penpals/" + BOB.getId())
@@ -326,7 +345,7 @@ public class MonitorControllerTest extends ControllerTestBase {
 	}
 
 	@Test
-	void parentHelper_canUpdateParentHelper() throws Exception {
+	void monitor_canUpdateParentHelper() throws Exception {
 		CreateAppUserRequest hugoUpdate = new CreateAppUserRequest(HUGO.getFirstName(), "Suarez", HUGO.getEmail(), HUGO.getPhone(), HUGO.getWhatsapp());
 
 		mockMvc.perform(put("/api/penpal/monitors/parent-helpers/" + HUGO.getId())

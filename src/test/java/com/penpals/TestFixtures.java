@@ -12,7 +12,7 @@ public final class TestFixtures {
 	public static final class Users {
 		private Users() {}
 
-		public static final CreateAppUserRequest PARENT_HELPER_A =
+		public static final CreateAppUserRequest APP_USER_A =
 			new CreateAppUserRequest("John", "Humphreys", "test@humphreys.com", "+14155552671", "+14155552671");
 	}
 
@@ -29,7 +29,7 @@ public final class TestFixtures {
 			new CreatePenpalRequest("Larry", "Sienfeld", 10, State.VT, "Haha!", 6L, null);
 
 		public static final CreatePenpalRequest PENPAL_D =
-			new CreatePenpalRequest("Joshua", "Abbot", 9, State.CA, "", null, Users.PARENT_HELPER_A);
+			new CreatePenpalRequest("Joshua", "Abbot", 9, State.CA, "", null, Users.APP_USER_A);
 	}
 
 	// Add these once the DTOs exist:

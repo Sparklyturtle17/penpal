@@ -232,12 +232,24 @@ public class ParentHelperControllerTest extends ControllerTestBase {
 
 	@Test
 	void parentHelper_cannotReassignPenpal_Mine() throws Exception {
-		CreatePenpalRequest bobUpdate = new CreatePenpalRequest(BOB.getFirstName(),
+		CreatePenpalRequest reassign = new CreatePenpalRequest(BOB.getFirstName(),
 			BOB.getLastName(), BOB.getAge(), BOB.getState(), BOB.getBiography(), HUGO.getId(), null);
 
-		mockMvc.perform(put("/api/penpal/parent-helpers/my-penpals/" + ALICE.getId())
+		mockMvc.perform(put("/api/penpal/parent-helpers/my-penpals/" + BOB.getId())
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(bobUpdate))
+				.content(objectMapper.writeValueAsString(reassign))
+				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
+			.andExpect(status().isForbidden());
+	}
+
+	@Test
+	void parentHelper_cannotReassignPenpal_NotMine() throws Exception {
+		CreatePenpalRequest reassign = new CreatePenpalRequest(CARLOS.getFirstName(),
+			CARLOS.getLastName(), CARLOS.getAge(), CARLOS.getState(), CARLOS.getBiography(), HUGO.getId(), null);
+
+		mockMvc.perform(put("/api/penpal/parent-helpers/my-penpals/" + CARLOS.getId())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(reassign))
 				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
 			.andExpect(status().isForbidden());
 	}

@@ -70,6 +70,17 @@ public class PenpalControllerTest extends ControllerTestBase {
 	// READ
 
 	@Test
+	void penpal_canReadMe() throws Exception {
+		PenpalBioView expected = PenpalBioView.of(CARLOS);
+
+		mockMvc.perform(get("/api/penpal/penpals/me")
+				.header(ActingAsPenpalFilter.HEADER, CARLOS.getId())
+				.with(httpBasic(HUGO.getAuthId(), HUGO.getAuthId())))
+			.andExpect(status().isOk())
+			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
+	}
+
+	@Test
 	void guardianActingAs_TheirPenpal_readsRelationshipMap() throws Exception {
 		var expected = new PenpalMapRelationshipView(
 			PenpalBioView.of(BOB), PenpalBioView.of(ALICE));

@@ -67,6 +67,13 @@ public class MonitorController {
 		return penpalService.monitorChatMap();
 	}
 
+	@GetMapping("/all-users")
+	public List<UserFullView> allUsers() {
+		return appUserService.findAllOrderedByRole().stream()
+			.map(UserFullView::of)
+			.toList();
+	}
+
 	@PutMapping("/reassign-penpal/{id}")
 	public ResponseEntity<Void> reassignPenpal(@PathVariable Long id, @Valid @RequestBody CreatePenpalRequest body) {
 		penpalService.reassignPenpal(id, body);

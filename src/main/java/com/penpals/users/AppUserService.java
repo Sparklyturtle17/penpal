@@ -2,7 +2,6 @@ package com.penpals.users;
 
 import com.penpals.common.exceptions.NotFoundException;
 import com.penpals.users.dto.CreateAppUserRequest;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -43,6 +42,17 @@ public class AppUserService {
 		parentHelper.setWhatsapp(req.whatsapp());
 		parentHelper.setRole(RoleEnum.PARENT_HELPER);
 		return appUserRepository.save(parentHelper);
+	}
+
+	public AppUser createMonitor(CreateAppUserRequest req) {
+		AppUser monitor = new AppUser();
+		monitor.setFirstName(req.firstName());
+		monitor.setLastName(req.lastName());
+		monitor.setEmail(req.email());
+		monitor.setPhone(req.phone());
+		monitor.setWhatsapp(req.whatsapp());
+		monitor.setRole(RoleEnum.MONITOR);
+		return appUserRepository.save(monitor);
 	}
 
 	public void delete(Long id) {
