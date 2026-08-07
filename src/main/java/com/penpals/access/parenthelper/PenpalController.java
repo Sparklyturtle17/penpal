@@ -23,6 +23,16 @@ public class PenpalController {
 
 	private final PenpalService penpalService;
 
+	//╔═════════════════════════════════════════════════════════╗
+	//║                          USERS                          ║
+	//╚═════════════════════════════════════════════════════════╝
+
+	///////////////////////////////////////////////////////////////
+	// CREATE
+
+	///////////////////////////////////////////////////////////////
+	// READ
+
 	@GetMapping("/me")
 	public PenpalBioView me(
 		@RequestAttribute(name = ActingAsPenpalFilter.ACTIVE_PENPAL_ATTR, required = false) Long penpalId) {
@@ -36,4 +46,20 @@ public class PenpalController {
 	public PenpalMapRelationshipView relations (@RequestAttribute(ActingAsPenpalFilter.ACTIVE_PENPAL_ATTR) Long penpalId) {
 		return penpalService.penpalChatMap(penpalId);
 	}
+
+	///////////////////////////////////////////////////////////////
+	// UPDATE
+
+	//╔═════════════════════════════════════════════════════════╗
+	//║                          CHATS                          ║
+	//╚═════════════════════════════════════════════════════════╝
+
+	///////////////////////////////////////////////////////////////
+	// CREATE
+
+	///////////////////////////////////////////////////////////////
+	// READ
+
+	///////////////////////////////////////////////////////////////
+	// UPDATE
 }

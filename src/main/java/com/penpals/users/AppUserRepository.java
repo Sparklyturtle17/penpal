@@ -9,6 +9,12 @@ import java.util.Optional;
 @Repository
 public interface AppUserRepository extends JpaRepository<AppUser, Long> {
 
+	///////////////////////////////////////////////////////////////
+	// CREATE
+
+	///////////////////////////////////////////////////////////////
+	// READ
+
 	List<AppUser> findAllByOrderByRoleAsc();
 
 	// returning users
@@ -19,5 +25,8 @@ public interface AppUserRepository extends JpaRepository<AppUser, Long> {
 
 	// helper
 	Optional<AppUser> findByWhatsapp(String whatsapp);
+
+	///////////////////////////////////////////////////////////////
+	// UPDATE
 
 }

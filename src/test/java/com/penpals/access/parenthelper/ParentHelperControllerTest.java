@@ -33,8 +33,9 @@ public class ParentHelperControllerTest extends ControllerTestBase {
 	CreatePenpalRequest NEW_PENPAL_WITH_OTHER_PARENT_HELPER = PENPAL_C;
 	CreatePenpalRequest NEW_PENPAL_WITH_NEW_PARENT_HELPER = PENPAL_D;
 
-	///////////////////////////////////////////////////////////////
-	// AUTH
+	//╔═════════════════════════════════════════════════════════╗
+	//║                           AUTH                          ║
+	//╚═════════════════════════════════════════════════════════╝
 
 	@Test
 	void guardianActingAsTheirPenpal_cannotHitParentHelperEndpoint() throws Exception {
@@ -64,6 +65,10 @@ public class ParentHelperControllerTest extends ControllerTestBase {
 				.with(httpBasic("admin", "admin")))
 			.andExpect(status().isForbidden());
 	}
+
+	//╔═════════════════════════════════════════════════════════╗
+	//║                          USERS                          ║
+	//╚═════════════════════════════════════════════════════════╝
 
 	///////////////////////////////////////////////////////////////
 	// CREATE
@@ -253,5 +258,18 @@ public class ParentHelperControllerTest extends ControllerTestBase {
 				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
 			.andExpect(status().isForbidden());
 	}
+
+	//╔═════════════════════════════════════════════════════════╗
+	//║                          CHATS                          ║
+	//╚═════════════════════════════════════════════════════════╝
+
+	///////////////////////////////////////////////////////////////
+	// CREATE
+
+	///////////////////////////////////////////////////////////////
+	// READ
+
+	///////////////////////////////////////////////////////////////
+	// UPDATE
 
 }

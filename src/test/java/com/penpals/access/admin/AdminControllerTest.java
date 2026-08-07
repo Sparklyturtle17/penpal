@@ -26,8 +26,9 @@ public class AdminControllerTest extends ControllerTestBase {
 	CreateAppUserRequest NEW_MONITOR = APP_USER_A;
 
 
-	///////////////////////////////////////////////////////////////
-	// AUTH
+	//╔═════════════════════════════════════════════════════════╗
+	//║                           AUTH                          ║
+	//╚═════════════════════════════════════════════════════════╝
 
 	@Test
 	void guardianActingAs_theirPenpal_cannotHit_adminEndpoint() throws Exception {
@@ -66,6 +67,10 @@ public class AdminControllerTest extends ControllerTestBase {
 			.andExpect(status().isCreated());
 	}
 
+	//╔═════════════════════════════════════════════════════════╗
+	//║                          USERS                          ║
+	//╚═════════════════════════════════════════════════════════╝
+
 	///////////////////////////////////////////////////////////////
 	// CREATE
 
@@ -89,4 +94,17 @@ public class AdminControllerTest extends ControllerTestBase {
 			.andExpect(status().isOk())
 			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
 	}
+
+	//╔═════════════════════════════════════════════════════════╗
+	//║                          CHATS                          ║
+	//╚═════════════════════════════════════════════════════════╝
+
+	///////////////////////////////////////////////////////////////
+	// CREATE
+
+	///////////////////////////////////////////////////////////////
+	// READ
+
+	///////////////////////////////////////////////////////////////
+	// UPDATE
 }

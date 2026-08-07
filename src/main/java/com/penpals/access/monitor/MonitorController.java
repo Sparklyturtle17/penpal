@@ -30,6 +30,13 @@ public class MonitorController {
 	private final PenpalService penpalService;
 	private final AppUserService appUserService;
 
+	//╔═════════════════════════════════════════════════════════╗
+	//║                          USERS                          ║
+	//╚═════════════════════════════════════════════════════════╝
+
+	///////////////////////////////////////////////////////////////
+	// CREATE
+
 	@PostMapping("/penpals")
 	public ResponseEntity<Void> create(@Valid @RequestBody CreatePenpalRequest body) {
 		Penpal created = penpalService.createPenpal(body);
@@ -41,6 +48,9 @@ public class MonitorController {
 		AppUser created = appUserService.createParentHelper(body);
 		return ApiResponses.created(created.getId());
 	}
+
+	///////////////////////////////////////////////////////////////
+	// READ
 
 	@GetMapping("/penpals/{id}")
 	public PenpalAdminView viewPenpal(@PathVariable Long id) {
@@ -74,6 +84,9 @@ public class MonitorController {
 			.toList();
 	}
 
+	///////////////////////////////////////////////////////////////
+	// UPDATE
+
 	@PutMapping("/reassign-penpal/{id}")
 	public ResponseEntity<Void> reassignPenpal(@PathVariable Long id, @Valid @RequestBody CreatePenpalRequest body) {
 		penpalService.reassignPenpal(id, body);
@@ -91,4 +104,17 @@ public class MonitorController {
 		appUserService.update(id, body);
 		return ResponseEntity.noContent().build();
 	}
+
+	//╔═════════════════════════════════════════════════════════╗
+	//║                          CHATS                          ║
+	//╚═════════════════════════════════════════════════════════╝
+
+	///////////////////////////////////////////////////////////////
+	// CREATE
+
+	///////////////////////////////////////////////////////////////
+	// READ
+
+	///////////////////////////////////////////////////////////////
+	// UPDATE
 }

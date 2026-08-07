@@ -25,11 +25,21 @@ public class ParentHelperController {
 	private final PenpalService penpalService;
 	private final CurrentUserService currentUserService;
 
+	//╔═════════════════════════════════════════════════════════╗
+	//║                          USERS                          ║
+	//╚═════════════════════════════════════════════════════════╝
+
+	///////////////////////////////////////////////////////////////
+	// CREATE
+
 	@PostMapping("/my-penpals")
 	public ResponseEntity<Void> create(@Valid @RequestBody CreatePenpalRequest body) {
 		Penpal created = penpalService.createPenpalForGuardian(body, currentUserService.currentId());
 		return ApiResponses.created(created.getId());
 	}
+
+	///////////////////////////////////////////////////////////////
+	// READ
 
 	@GetMapping("/my-penpals-companions")
 	public GuardianMapRelationshipView relations() {
@@ -46,10 +56,25 @@ public class ParentHelperController {
 		return PenpalBioView.of(penpalService.findByIdForCompanionGuardian(id, currentUserService.currentId()));
 	}
 
+	///////////////////////////////////////////////////////////////
+	// UPDATE
+
 	@PutMapping("/my-penpals/{id}")
 	public ResponseEntity<Void> update(@PathVariable Long id, @Valid @RequestBody CreatePenpalRequest body) {
 		penpalService.updatePenpalForGuardian(id, body, currentUserService.currentId());
 		return ResponseEntity.noContent().build();
 	}
 
+	//╔═════════════════════════════════════════════════════════╗
+	//║                          CHATS                          ║
+	//╚═════════════════════════════════════════════════════════╝
+
+	///////////////////////////////////////////////////////////////
+	// CREATE
+
+	///////////////////////////////////////////////////////////////
+	// READ
+
+	///////////////////////////////////////////////////////////////
+	// UPDATE
 }

@@ -22,6 +22,9 @@ public class PenpalService {
 	private final PenpalRepository penpalRepository;
 	private final AppUserService appUserService;
 
+	///////////////////////////////////////////////////////////////
+	// CREATE
+
 	public Penpal createPenpal (CreatePenpalRequest req) {
 		Penpal p = new Penpal();
 		p.setFirstName(req.firstName());
@@ -54,6 +57,12 @@ public class PenpalService {
 
 		return penpalRepository.save(p);
 	}
+
+	///////////////////////////////////////////////////////////////
+	// READ
+
+	///////////////////////////////////////////////////////////////
+	// UPDATE
 
 	public Penpal findById (Long id) {
 		return penpalRepository.findById(id)
@@ -110,11 +119,10 @@ public class PenpalService {
 			comp == null ? null : PenpalBioView.of(comp));
 	}
 
-	///
-	///
-	///
+	///////////////////////////////////////////////////////////////
+	// UPDATE
 
-	public Penpal updatePenpalForGuardian(Long penpalId, CreatePenpalRequest req, Long guardianId) {
+	public void updatePenpalForGuardian(Long penpalId, CreatePenpalRequest req, Long guardianId) {
 		if (req.parentHelperId() != null || req.parentHelper() != null) {
 			throw new AccessDeniedException("Parent helpers cannot reassign penpals.");
 		}
@@ -125,17 +133,17 @@ public class PenpalService {
 		p.setAge(req.age());
 		p.setState(req.state());
 		p.setBiography(req.biography());
-		return penpalRepository.save(p);
+		penpalRepository.save(p);
 	}
 
-	public Penpal reassignPenpal(Long penpalId, CreatePenpalRequest req) {
+	public void reassignPenpal(Long penpalId, CreatePenpalRequest req) {
 
 		Penpal p = findById(penpalId);
 
-		return setOrCreateParentHelper(req, p);
+		setOrCreateParentHelper(req, p);
 	}
 
-	public Penpal updatePenpalForMonitor(Long penpalId, CreatePenpalRequest req) {
+	public void updatePenpalForMonitor(Long penpalId, CreatePenpalRequest req) {
 
 		Penpal p = findById(penpalId);
 		p.setFirstName(req.firstName());
@@ -143,8 +151,10 @@ public class PenpalService {
 		p.setAge(req.age());
 		p.setState(req.state());
 		p.setBiography(req.biography());
-		return setOrCreateParentHelper(req, p);
+		setOrCreateParentHelper(req, p);
 	}
+
+	// HELPER
 
 	@NonNull
 	private Penpal setOrCreateParentHelper(CreatePenpalRequest req, Penpal p) {

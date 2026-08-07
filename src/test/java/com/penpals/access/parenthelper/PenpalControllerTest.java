@@ -19,8 +19,9 @@ public class PenpalControllerTest extends ControllerTestBase {
 
 	RequestPostProcessor PARENT_HELPER_AUTH = httpBasic("parent_helper", "parent_helper");
 
-	///////////////////////////////////////////////////////////////
-	// AUTH
+	//╔═════════════════════════════════════════════════════════╗
+	//║                           AUTH                          ║
+	//╚═════════════════════════════════════════════════════════╝
 
 	@Test
 	void guardianActingAs_TheirPenpal_canHit_PenpalEndpoint() throws Exception {
@@ -63,6 +64,10 @@ public class PenpalControllerTest extends ControllerTestBase {
 			.andExpect(status().isForbidden());
 	}
 
+	//╔═════════════════════════════════════════════════════════╗
+	//║                          USERS                          ║
+	//╚═════════════════════════════════════════════════════════╝
+
 	///////////////////////////////////////////////////////////////
 	// CREATE
 
@@ -91,6 +96,19 @@ public class PenpalControllerTest extends ControllerTestBase {
 			.andExpect(status().isOk())
 			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
 	}
+
+	///////////////////////////////////////////////////////////////
+	// UPDATE
+
+	//╔═════════════════════════════════════════════════════════╗
+	//║                          CHATS                          ║
+	//╚═════════════════════════════════════════════════════════╝
+
+	///////////////////////////////////////////////////////////////
+	// CREATE
+
+	///////////////////////////////////////////////////////////////
+	// READ
 
 	///////////////////////////////////////////////////////////////
 	// UPDATE

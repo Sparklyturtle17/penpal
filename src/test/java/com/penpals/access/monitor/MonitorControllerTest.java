@@ -35,8 +35,9 @@ public class MonitorControllerTest extends ControllerTestBase {
 	CreatePenpalRequest NEW_PENPAL_WITH_NEW_PARENT_HELPER = PENPAL_D;
 	CreateAppUserRequest NEW_PARENT_HELPER = APP_USER_A;
 
-	///////////////////////////////////////////////////////////////
-	// AUTH
+	//╔═════════════════════════════════════════════════════════╗
+	//║                           AUTH                          ║
+	//╚═════════════════════════════════════════════════════════╝
 
 	@Test
 	void guardianActingAs_theirPenpal_cannotHit_monitorEndpoint() throws Exception {
@@ -66,6 +67,10 @@ public class MonitorControllerTest extends ControllerTestBase {
 				.with(httpBasic("admin", "admin")))
 			.andExpect(status().isOk());
 	}
+
+	//╔═════════════════════════════════════════════════════════╗
+	//║                          USERS                          ║
+	//╚═════════════════════════════════════════════════════════╝
 
 	///////////////////////////////////////////////////////////////
 	// CREATE
@@ -362,4 +367,17 @@ public class MonitorControllerTest extends ControllerTestBase {
 			.andExpect(status().isOk())
 			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
 	}
+
+	//╔═════════════════════════════════════════════════════════╗
+	//║                          CHATS                          ║
+	//╚═════════════════════════════════════════════════════════╝
+
+	///////////////////////////////////////////////////////////////
+	// CREATE
+
+	///////////////////////////////////////////////////////////////
+	// READ
+
+	///////////////////////////////////////////////////////////////
+	// UPDATE
 }
