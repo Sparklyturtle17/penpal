@@ -1,5 +1,7 @@
 package com.penpals.dto;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.penpals.common.State;
 import com.penpals.users.AppUser;
 import com.penpals.users.RoleEnum;
@@ -9,13 +11,19 @@ import com.penpals.users.dto.PenpalViews.PenpalAdminView;
 import com.penpals.users.dto.PenpalViews.PenpalBioView;
 import com.penpals.users.penpal.Penpal;
 import org.junit.jupiter.api.Test;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Transactional
 class ViewMappingTest {
-// todo TEST ALL OF THIS
+
+	ObjectMapper mapper = new ObjectMapper();
+
 	@Test
-	void userFullView_mapsEveryField() {
+	void userFullView_mapsEveryField() throws Exception {
 		AppUser u = new AppUser();
 		u.setId(5L); u.setFirstName("first"); u.setLastName("last");   // distinct values catch transposition
 		u.setEmail("e@x.com"); u.setPhone("111"); u.setWhatsapp("222");
@@ -30,10 +38,16 @@ class ViewMappingTest {
 		assertThat(v.phone()).isEqualTo("111");
 		assertThat(v.whatsapp()).isEqualTo("222");
 		assertThat(v.role()).isEqualTo(RoleEnum.PARENT_HELPER);
+
+		Map<String, Object> keys = mapper.readValue(
+			mapper.writeValueAsString(v), new TypeReference<>() {});
+
+		assertThat(keys.keySet())
+			.containsExactlyInAnyOrder("id", "firstName", "lastName", "email", "phone", "whatsapp", "role");
 	}
 
 	@Test
-	void userSummaryView_mapsIdAndNameOnly() {
+	void userSummaryView_mapsIdAndNameOnly() throws Exception {
 		AppUser u = new AppUser();
 		u.setId(9L); u.setFirstName("first"); u.setLastName("last");
 
@@ -42,10 +56,16 @@ class ViewMappingTest {
 		assertThat(v.id()).isEqualTo(9L);
 		assertThat(v.firstName()).isEqualTo("first");
 		assertThat(v.lastName()).isEqualTo("last");
+
+		Map<String, Object> keys = mapper.readValue(
+			mapper.writeValueAsString(v), new TypeReference<>() {});
+
+		assertThat(keys.keySet())
+			.containsExactlyInAnyOrder("id", "firstName", "lastName");
 	}
 
 	@Test
-	void penpalAdminView_mapsFieldsAndNestsGuardian() {
+	void penpalAdminView_mapsFieldsAndNestsGuardian() throws Exception {
 		AppUser guardian = new AppUser();
 		guardian.setId(5L); guardian.setRole(RoleEnum.PARENT_HELPER);
 
@@ -64,10 +84,23 @@ class ViewMappingTest {
 		assertThat(v.biography()).isEqualTo("bio");
 		assertThat(v.parentHelper()).isNotNull();
 		assertThat(v.parentHelper().id()).isEqualTo(5L);   // nested UserFullView.of ran
+
+
+		Map<String, Object> keys = mapper.readValue(
+			mapper.writeValueAsString(v), new TypeReference<>() {});
+
+		assertThat(keys.keySet())
+			.containsExactlyInAnyOrder("id", "firstName", "lastName", "age", "state", "biography", "parentHelper");
+
+		Map<String, Object> parentHelperKeys = mapper.readValue(
+			mapper.writeValueAsString(v.parentHelper()), new TypeReference<>() {});
+
+		assertThat(parentHelperKeys.keySet())
+			.containsExactlyInAnyOrder("id", "firstName", "lastName", "email", "phone", "whatsapp", "role");
 	}
 
 	@Test
-	void penpalAdminView_nullGuardian_mapsToNull() {   // the branch that would NPE if written wrong
+	void penpalAdminView_nullGuardian_mapsToNull() throws Exception {   // the branch that would NPE if written wrong
 		Penpal p = new Penpal();
 		p.setId(1L);
 		p.setState(State.CA);
@@ -77,7 +110,7 @@ class ViewMappingTest {
 	}
 
 	@Test
-	void penpalBioView_mapsReducedFields() {
+	void penpalBioView_mapsReducedFields() throws Exception {
 		Penpal p = new Penpal();
 		p.setId(1L); p.setFirstName("first"); p.setAge(11);
 		p.setState(State.CA); p.setBiography("bio");
@@ -89,5 +122,11 @@ class ViewMappingTest {
 		assertThat(v.age()).isEqualTo(11);
 		assertThat(v.state()).isEqualTo(State.CA);
 		assertThat(v.biography()).isEqualTo("bio");
+
+		Map<String, Object> keys = mapper.readValue(
+			mapper.writeValueAsString(v), new TypeReference<>() {});
+
+		assertThat(keys.keySet())
+			.containsExactlyInAnyOrder("id", "firstName", "age", "state", "biography");
 	}
 }
