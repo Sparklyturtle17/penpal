@@ -53,8 +53,8 @@ public class MonitorController {
 	// READ
 
 	@GetMapping("/penpals/{id}")
-	public PenpalAdminView viewPenpal(@PathVariable Long id) {
-		return PenpalAdminView.of(penpalService.findById(id));
+	public PenpalMonitorView viewPenpal(@PathVariable Long id) {
+		return PenpalMonitorView.of(penpalService.findById(id));
 	}
 
 	@GetMapping("/parent-helpers/{id}")

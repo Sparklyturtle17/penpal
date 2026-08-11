@@ -7,7 +7,7 @@ import com.penpals.users.AppUser;
 import com.penpals.users.RoleEnum;
 import com.penpals.users.dto.AppUserViews.UserFullView;
 import com.penpals.users.dto.AppUserViews.UserSummaryView;
-import com.penpals.users.dto.PenpalViews.PenpalAdminView;
+import com.penpals.users.dto.PenpalViews.PenpalMonitorView;
 import com.penpals.users.dto.PenpalViews.PenpalBioView;
 import com.penpals.users.penpal.Penpal;
 import org.junit.jupiter.api.Test;
@@ -74,7 +74,7 @@ class ViewMappingTest {
 		p.setAge(12); p.setState(State.LILONGWE); p.setBiography("bio");
 		p.setParentHelper(guardian);
 
-		PenpalAdminView v = PenpalAdminView.of(p);
+		PenpalMonitorView v = PenpalMonitorView.of(p);
 
 		assertThat(v.id()).isEqualTo(2L);
 		assertThat(v.firstName()).isEqualTo("first");
@@ -106,7 +106,7 @@ class ViewMappingTest {
 		p.setState(State.CA);
 		p.setParentHelper(null);
 
-		assertThat(PenpalAdminView.of(p).parentHelper()).isNull();
+		assertThat(PenpalMonitorView.of(p).parentHelper()).isNull();
 	}
 
 	@Test

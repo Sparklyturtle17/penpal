@@ -32,17 +32,17 @@ INSERT INTO chat_members (chat_id, members_id) VALUES
 -- penpal_author = the authoring penpal; performed_by = the guardian who actually sent it.
 -- approved_by is ALWAYS the monitor (Mona, 7). Msg 2 still pending.
 INSERT INTO message (id, text, penpal_author_id, performed_by_id, create_time, chat_id, approved, approved_by_id, approved_time) VALUES
-(1, 'Hi Bob, nice to meet you!',      1, 8, '2026-07-01 09:00:00', 1, TRUE, 7,    '2026-07-01 09:05:00'),
-(2, 'Hey Alice! Where are you from?', 2, 5, '2026-07-01 10:00:00', 1, NULL, NULL, NULL),
-(3, 'Hola Diana, do you like music?', 3, 6, '2026-07-02 14:00:00', 2, TRUE, 7,    '2026-07-02 14:10:00');
+(1, 'Hi Bob, nice to meet you!',      1, 8, '2026-07-01 09:00:00+00', 1, TRUE, 7,    '2026-07-01 09:05:00+00'),
+(2, 'Hey Alice! Where are you from?', 2, 5, '2026-07-01 10:00:00+00', 1, NULL, NULL, NULL),
+(3, 'Hola Diana, do you like music?', 3, 6, '2026-07-02 14:00:00+00', 2, TRUE, 7,    '2026-07-02 14:10:00+00');
 
 -- Old states preserved before each edit. edited_by = who edited (creator / guardian / monitor).
 -- penpal_author + performed_by copied from the message being audited.
 INSERT INTO message_audit
     (audit_id, archive_time, edited_by_id, message_id, text, penpal_author_id, performed_by_id, create_time, chat_id, approved, approved_by_id, approved_time) VALUES
-(1, '2026-07-01 09:02:00', 1, 1, 'Hi Bob',     1, 8, '2026-07-01 09:00:00', 1, NULL, NULL, NULL),
-(2, '2026-07-01 10:05:00', 5, 2, 'Hey Alice',  2, 5, '2026-07-01 10:00:00', 1, NULL, NULL, NULL),
-(3, '2026-07-02 14:20:00', 7, 3, 'Hola Diana', 3, 6, '2026-07-02 14:00:00', 2, TRUE, 7,    '2026-07-02 14:10:00');
+(1, '2026-07-01 09:02:00+00', 1, 1, 'Hi Bob',     1, 8, '2026-07-01 09:00:00+00', 1, NULL, NULL, NULL),
+(2, '2026-07-01 10:05:00+00', 5, 2, 'Hey Alice',  2, 5, '2026-07-01 10:00:00+00', 1, NULL, NULL, NULL),
+(3, '2026-07-02 14:20:00+00', 7, 3, 'Hola Diana', 3, 6, '2026-07-02 14:00:00+00', 2, TRUE, 7,    '2026-07-02 14:10:00+00');
 
 -- Seed rows above use explicit ids; H2 does not advance the IDENTITY counter for
 -- explicit inserts, so restart each generated-id table clear of the seeded values.

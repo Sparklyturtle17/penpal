@@ -2,7 +2,6 @@ package com.penpals.access.parenthelper;
 
 import com.penpals.access.CurrentUserService;
 import com.penpals.common.ApiResponses;
-import com.penpals.users.dto.AppUserViews.*;
 import com.penpals.users.dto.RelationshipsView.*;
 import com.penpals.users.penpal.Penpal;
 import com.penpals.users.penpal.PenpalService;
@@ -47,8 +46,8 @@ public class ParentHelperController {
 	}
 
 	@GetMapping("/my-penpals/{id}")
-	public PenpalAdminView view(@PathVariable Long id) {
-		return PenpalAdminView.of(penpalService.findByIdForGuardian(id, currentUserService.currentId()));
+	public PenpalMonitorView view(@PathVariable Long id) {
+		return PenpalMonitorView.of(penpalService.findByIdForGuardian(id, currentUserService.currentId()));
 	}
 
 	@GetMapping("/my-penpals-companions/{id}")

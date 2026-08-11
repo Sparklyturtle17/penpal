@@ -61,9 +61,6 @@ public class PenpalService {
 	///////////////////////////////////////////////////////////////
 	// READ
 
-	///////////////////////////////////////////////////////////////
-	// UPDATE
-
 	public Penpal findById (Long id) {
 		return penpalRepository.findById(id)
 			.orElseThrow(() -> new NotFoundException("No penpal with id " + id));
@@ -87,8 +84,8 @@ public class PenpalService {
 	public List<MonitorMapRelationshipView> monitorChatMap () {
 		return penpalRepository.findActiveChatPairs().stream()
 			.map(pair -> new MonitorMapRelationshipView (
-				PenpalAdminView.of((Penpal) pair[0]),
-				PenpalAdminView.of((Penpal) pair[1])))
+				PenpalMonitorView.of((Penpal) pair[0]),
+				PenpalMonitorView.of((Penpal) pair[1])))
 			.toList();
 	}
 
@@ -101,7 +98,7 @@ public class PenpalService {
 				.map(p -> {
 					Penpal comp = penpalRepository.findActiveChatCompanion(p.getId()).orElse(null);
 					return new PenpalWithCompanion (
-						PenpalAdminView.of(p),
+						PenpalMonitorView.of(p),
 						comp == null ? null : PenpalBioView.of(comp));
 				})
 				.toList();

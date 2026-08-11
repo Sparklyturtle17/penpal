@@ -88,7 +88,7 @@ public class MonitorControllerTest extends ControllerTestBase {
 		String location = created.getResponse().getHeader("Location");
 		Long newId = Long.parseLong(location.substring(location.lastIndexOf('/') + 1));
 
-		PenpalAdminView expected = new PenpalAdminView(
+		PenpalMonitorView expected = new PenpalMonitorView(
 			newId,
 			NEW_PENPAL_WITH_EXISTING_PARENT_HELPER.firstName(),
 			NEW_PENPAL_WITH_EXISTING_PARENT_HELPER.lastName(),
@@ -118,7 +118,7 @@ public class MonitorControllerTest extends ControllerTestBase {
 		String location = created.getResponse().getHeader("Location");
 		Long newId = Long.parseLong(location.substring(location.lastIndexOf('/') + 1));
 
-		PenpalAdminView expected = new PenpalAdminView(
+		PenpalMonitorView expected = new PenpalMonitorView(
 			newId,
 			NEW_PENPAL_WITH_NEW_PARENT_HELPER.firstName(),
 			NEW_PENPAL_WITH_NEW_PARENT_HELPER.lastName(),
@@ -188,8 +188,8 @@ public class MonitorControllerTest extends ControllerTestBase {
 	@Test
 	void monitor_readsRelationshipMap() throws Exception {
 		List<MonitorMapRelationshipView> expected = List.of(
-			new MonitorMapRelationshipView(PenpalAdminView.of(ALICE), PenpalAdminView.of(BOB)),
-			new MonitorMapRelationshipView(PenpalAdminView.of(CARLOS), PenpalAdminView.of(DIANA)));
+			new MonitorMapRelationshipView(PenpalMonitorView.of(ALICE), PenpalMonitorView.of(BOB)),
+			new MonitorMapRelationshipView(PenpalMonitorView.of(CARLOS), PenpalMonitorView.of(DIANA)));
 
 		mockMvc.perform(get("/api/penpal/monitors/relations")
 				.with(MONITOR_AUTH))
@@ -219,7 +219,7 @@ public class MonitorControllerTest extends ControllerTestBase {
 
 	@Test
 	void monitor_readsPenpal() throws Exception {
-		var expected = PenpalAdminView.of(BOB);
+		PenpalMonitorView expected = PenpalMonitorView.of(BOB);
 
 		mockMvc.perform(get("/api/penpal/monitors/penpals/" + BOB.getId())
 				.with(MONITOR_AUTH))
@@ -230,7 +230,7 @@ public class MonitorControllerTest extends ControllerTestBase {
 
 	@Test
 	void monitor_readsParentHelper() throws Exception {
-		var expected = UserFullView.of(HUGO);
+		UserFullView expected = UserFullView.of(HUGO);
 
 		mockMvc.perform(get("/api/penpal/monitors/parent-helpers/" + HUGO.getId())
 				.with(MONITOR_AUTH))
@@ -241,7 +241,7 @@ public class MonitorControllerTest extends ControllerTestBase {
 
 	@Test
 	void monitor_readsMonitor() throws Exception {
-		var expected = UserFullView.of(MONA);
+		UserFullView expected = UserFullView.of(MONA);
 
 		mockMvc.perform(get("/api/penpal/monitors/monitors/" + MONA.getId())
 				.with(MONITOR_AUTH))
@@ -252,7 +252,7 @@ public class MonitorControllerTest extends ControllerTestBase {
 
 	@Test
 	void monitor_readsAdmin() throws Exception {
-		var expected = UserFullView.of(ADAM);
+		UserFullView expected = UserFullView.of(ADAM);
 
 		mockMvc.perform(get("/api/penpal/monitors/admins/" + ADAM.getId())
 				.with(MONITOR_AUTH))
@@ -277,7 +277,7 @@ public class MonitorControllerTest extends ControllerTestBase {
 				.with(MONITOR_AUTH))
 			.andExpect(status().isNoContent());
 
-		PenpalAdminView expected = new PenpalAdminView( BOB.getId(), BOB.getFirstName(), BOB.getLastName(), BOB.getAge(), BOB.getState(), BOB.getBiography(), UserFullView.of(HUGO));
+		PenpalMonitorView expected = new PenpalMonitorView( BOB.getId(), BOB.getFirstName(), BOB.getLastName(), BOB.getAge(), BOB.getState(), BOB.getBiography(), UserFullView.of(HUGO));
 
 
 		mockMvc.perform(get("/api/penpal/monitors/penpals/" + BOB.getId())
@@ -307,7 +307,7 @@ public class MonitorControllerTest extends ControllerTestBase {
 		int guardianId = com.jayway.jsonpath.JsonPath.read(res.getResponse().getContentAsString(), "$.parentHelper.id");
 		assertThat(guardianId).isNotEqualTo(HELEN.getId().intValue());
 
-		PenpalAdminView expected = new PenpalAdminView(
+		PenpalMonitorView expected = new PenpalMonitorView(
 			BOB.getId(), BOB.getFirstName(), BOB.getLastName(), BOB.getAge(), BOB.getState(), BOB.getBiography(),
 			new UserFullView((long) guardianId,
 				NEW_PARENT_HELPER.firstName(), NEW_PARENT_HELPER.lastName(), NEW_PARENT_HELPER.email(),
@@ -341,7 +341,7 @@ public class MonitorControllerTest extends ControllerTestBase {
 			.andExpect(status().isNoContent())
 			.andReturn();
 
-		PenpalAdminView expected = new PenpalAdminView( BOB.getId(), BOB.getFirstName(), "Stewart", BOB.getAge(), BOB.getState(), BOB.getBiography(), UserFullView.of(HELEN));
+		PenpalMonitorView expected = new PenpalMonitorView( BOB.getId(), BOB.getFirstName(), "Stewart", BOB.getAge(), BOB.getState(), BOB.getBiography(), UserFullView.of(HELEN));
 
 		mockMvc.perform(get("/api/penpal/monitors/penpals/" + BOB.getId())
 				.with(MONITOR_AUTH))

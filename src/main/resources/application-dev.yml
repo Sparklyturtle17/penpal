@@ -19,6 +19,8 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        jdbc:
+          time_zone: UTC
 
   # Browse the in-memory DB at http://localhost:8080/h2-console
   h2:

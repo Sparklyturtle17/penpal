@@ -7,7 +7,7 @@ import com.penpals.users.penpal.Penpal;
 
 public interface PenpalViews {
 
-	record PenpalAdminView(
+	record PenpalMonitorView(
 		Long id,
 		String firstName,
 		String lastName,
@@ -16,8 +16,8 @@ public interface PenpalViews {
 		String biography,
 		UserFullView parentHelper
 	) {
-		public static PenpalAdminView of(Penpal p) {
-			return new PenpalAdminView(
+		public static PenpalMonitorView of(Penpal p) {
+			return new PenpalMonitorView(
 				p.getId(),
 				p.getFirstName(),
 				p.getLastName(),

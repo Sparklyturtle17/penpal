@@ -87,7 +87,7 @@ public class ParentHelperControllerTest extends ControllerTestBase {
 		String location = created.getResponse().getHeader("Location");
 		Long newId = Long.parseLong(location.substring(location.lastIndexOf('/') + 1));
 
-		PenpalAdminView expected = new PenpalAdminView(
+		PenpalMonitorView expected = new PenpalMonitorView(
 			newId,
 			NEW_PENPAL_WITH_SELF.firstName(),
 			NEW_PENPAL_WITH_SELF.lastName(),
@@ -117,7 +117,7 @@ public class ParentHelperControllerTest extends ControllerTestBase {
 		String location = created.getResponse().getHeader("Location");
 		Long newId = Long.parseLong(location.substring(location.lastIndexOf('/') + 1));
 
-		PenpalAdminView expected = new PenpalAdminView(
+		PenpalMonitorView expected = new PenpalMonitorView(
 			newId,
 			NEW_PENPAL_WITH_NULL.firstName(),
 			NEW_PENPAL_WITH_NULL.lastName(),
@@ -157,9 +157,9 @@ public class ParentHelperControllerTest extends ControllerTestBase {
 
 	@Test
 	void parentHelper_readsRelationshipMap() throws Exception {
-		var expected = new GuardianMapRelationshipView(
+		GuardianMapRelationshipView expected = new GuardianMapRelationshipView(
 			UserFullView.of(HELEN),
-			List.of(new PenpalWithCompanion(PenpalAdminView.of(BOB), PenpalBioView.of(ALICE))));
+			List.of(new PenpalWithCompanion(PenpalMonitorView.of(BOB), PenpalBioView.of(ALICE))));
 
 		mockMvc.perform(get("/api/penpal/parent-helpers/my-penpals-companions")
 				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
@@ -169,7 +169,7 @@ public class ParentHelperControllerTest extends ControllerTestBase {
 
 	@Test
 	void parentHelper_readsPenpal_Mine() throws Exception {
-		var expected = PenpalAdminView.of(BOB);
+		PenpalMonitorView expected = PenpalMonitorView.of(BOB);
 
 		mockMvc.perform(get("/api/penpal/parent-helpers/my-penpals/" + BOB.getId())
 				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
@@ -187,7 +187,7 @@ public class ParentHelperControllerTest extends ControllerTestBase {
 
 	@Test
 	void parentHelper_readsPenpalCompanion_Mine() throws Exception {
-		var expected = PenpalBioView.of(ALICE);
+		PenpalBioView expected = PenpalBioView.of(ALICE);
 
 		mockMvc.perform(get("/api/penpal/parent-helpers/my-penpals-companions/" + BOB.getId())
 				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
@@ -216,7 +216,7 @@ public class ParentHelperControllerTest extends ControllerTestBase {
 			.andExpect(status().isNoContent())
 			.andReturn();
 
-		PenpalAdminView expected = new PenpalAdminView( BOB.getId(), BOB.getFirstName(), "Stewart", BOB.getAge(), BOB.getState(), BOB.getBiography(), UserFullView.of(HELEN));
+		PenpalMonitorView expected = new PenpalMonitorView( BOB.getId(), BOB.getFirstName(), "Stewart", BOB.getAge(), BOB.getState(), BOB.getBiography(), UserFullView.of(HELEN));
 
 		mockMvc.perform(get("/api/penpal/parent-helpers/my-penpals/" + BOB.getId())
 				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
@@ -263,13 +263,6 @@ public class ParentHelperControllerTest extends ControllerTestBase {
 	//║                          CHATS                          ║
 	//╚═════════════════════════════════════════════════════════╝
 
-	///////////////////////////////////////////////////////////////
-	// CREATE
-
-	///////////////////////////////////////////////////////////////
-	// READ
-
-	///////////////////////////////////////////////////////////////
-	// UPDATE
+	// should be acting "as their penpal" to perform chat actions
 
 }
