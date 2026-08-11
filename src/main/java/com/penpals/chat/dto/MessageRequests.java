@@ -15,8 +15,11 @@ public interface MessageRequests {
 	) {}
 
 	record ApprovalMessageRequest(
-		@NotNull Long messageId,
 		@NotNull Boolean approved
+	) {}
+
+	record CreateBlastMessageRequest(
+		@NotBlank String text
 	) {}
 
 }

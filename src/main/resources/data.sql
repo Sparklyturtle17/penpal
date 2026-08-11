@@ -34,7 +34,11 @@ INSERT INTO chat_members (chat_id, members_id) VALUES
 INSERT INTO message (id, text, penpal_author_id, performed_by_id, create_time, chat_id, approved, approved_by_id, approved_time) VALUES
 (1, 'Hi Bob, nice to meet you!',      1, 8, '2026-07-01 09:00:00+00', 1, TRUE, 7,    '2026-07-01 09:05:00+00'),
 (2, 'Hey Alice! Where are you from?', 2, 5, '2026-07-01 10:00:00+00', 1, NULL, NULL, NULL),
-(3, 'Hola Diana, do you like music?', 3, 6, '2026-07-02 14:00:00+00', 2, TRUE, 7,    '2026-07-02 14:10:00+00');
+(3, 'Hola Diana, do you like music?', 3, 6, '2026-07-02 14:00:00+00', 2, TRUE, 7,    '2026-07-02 14:10:00+00'),
+-- Monitor "blast": one message fanned out to every active chat. No penpal author;
+-- performed_by = the monitor (Mona, 7), auto-approved by that same monitor.
+(4, 'Reminder: always be kind online!', NULL, 7, '2026-07-03 12:00:00+00', 1, TRUE, 7, '2026-07-03 12:00:00+00'),
+(5, 'Reminder: always be kind online!', NULL, 7, '2026-07-03 12:00:00+00', 2, TRUE, 7, '2026-07-03 12:00:00+00');
 
 -- Old states preserved before each edit. edited_by = who edited (creator / guardian / monitor).
 -- penpal_author + performed_by copied from the message being audited.

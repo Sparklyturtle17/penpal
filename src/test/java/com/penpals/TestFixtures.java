@@ -1,5 +1,7 @@
 package com.penpals;
 
+import com.penpals.chat.dto.MessageRequests.CreateBlastMessageRequest;
+import com.penpals.chat.dto.MessageRequests.CreateNewMessageRequest;
 import com.penpals.common.State;
 import com.penpals.users.dto.CreateAppUserRequest;
 import com.penpals.users.dto.CreatePenpalRequest;
@@ -32,15 +34,16 @@ public final class TestFixtures {
 			new CreatePenpalRequest("Joshua", "Abbot", 9, State.CA, "", null, Users.APP_USER_A);
 	}
 
-	// Add these once the DTOs exist:
-	//
-	// public static final class Messages {
-	//     private Messages() {}
-	//     public static final CreateMessageRequest ... ;
-	// }
-	//
-	// public static final class Chats {
-	//     private Chats() {}
-	//     public static final CreateChatRequest ... ;
-	// }
+	public static final class Messages {
+		private Messages() {}
+
+		/** Monitor broadcast to every active chat (text only — sender comes from auth). */
+		public static final CreateBlastMessageRequest BLAST =
+			new CreateBlastMessageRequest("Reminder: always be kind online!");
+
+		/** A new message in a chat (author + sender come from acting-as + auth, not the body). */
+		public static CreateNewMessageRequest inChat(long chatId, String text) {
+			return new CreateNewMessageRequest(text, chatId);
+		}
+	}
 }

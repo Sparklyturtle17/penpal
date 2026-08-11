@@ -1,6 +1,11 @@
 package com.penpals.access.monitor;
 
 import com.penpals.ControllerTestBase;
+import com.penpals.chat.dto.ChatViews;
+import com.penpals.chat.dto.ChatViews.*;
+import com.penpals.chat.dto.MessageRequests.*;
+import com.penpals.chat.dto.MessageViews;
+import com.penpals.chat.dto.MessageViews.*;
 import com.penpals.common.config.ActingAsPenpalFilter;
 import com.penpals.users.RoleEnum;
 import com.penpals.users.dto.AppUserViews.*;
@@ -8,6 +13,7 @@ import com.penpals.users.dto.CreateAppUserRequest;
 import com.penpals.users.dto.CreatePenpalRequest;
 import com.penpals.users.dto.PenpalViews.*;
 import com.penpals.users.dto.RelationshipsView.*;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
@@ -15,6 +21,7 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.penpals.SeedData.*;
@@ -375,9 +382,208 @@ public class MonitorControllerTest extends ControllerTestBase {
 	///////////////////////////////////////////////////////////////
 	// CREATE
 
+	@Test
+	void monitor_canCreateBlastMessage() throws Exception {
+		CreateBlastMessageRequest blastMessage = new CreateBlastMessageRequest("ANNOUNCEMENT");
+
+		MvcResult created = mockMvc.perform(post("/api/penpal/monitors/messages")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(blastMessage))
+				.with(httpBasic(MONA.getAuthId(), MONA.getAuthId())))
+			.andExpect(status().isCreated())
+			.andExpect(header().exists("Location"))
+			.andReturn();
+
+		String location = created.getResponse().getHeader("Location");
+		long newId = Long.parseLong(location.substring(location.lastIndexOf('/') + 1));
+
+		MvcResult res = mockMvc.perform(get(URI.create(location))
+				.with(MONITOR_AUTH))
+			.andExpect(status().isOk())
+			.andReturn();
+
+		MessageMonitorView actual = objectMapper.readValue(
+			res.getResponse().getContentAsString(), MessageMonitorView.class);
+
+		MessageMonitorView expected = new MessageMonitorView(
+			newId,
+			blastMessage.text(),
+			new PenpalMonitorView(MONA.getId(), MONA.getFirstName(), MONA.getLastName(), null, null, "~ a monitor", null),
+			actual.createTime(),
+			actual.chat(),
+			true,
+			actual.approvedTime()
+		);
+
+		Assertions.assertThat(actual).isEqualTo(expected);
+	}
+
 	///////////////////////////////////////////////////////////////
 	// READ
 
+	@Test
+	void monitor_canRead_Any_Message() throws Exception {
+
+		MessageMonitorView expected = new MessageMonitorView(MSG_1.getId(), MSG_1.getText(), PenpalMonitorView.of(MSG_1.getPenpalAuthor()), MSG_1.getCreateTime(), ChatMonitorView.of(MSG_1.getChat()), MSG_1.getApproved(), MSG_1.getApprovedTime());
+
+		mockMvc.perform(get("/api/penpal/monitors/messages/" +  MSG_1.getId())
+				.with(MONITOR_AUTH))
+			.andExpect(status().isOk())
+			.andExpect(content().json(objectMapper.writeValueAsString(expected), true))
+			.andReturn();
+
+	}
+
+	@Test
+	void monitor_canRead_AnyEntireChat() throws Exception {
+
+		ChatMonitorView expected = ChatMonitorView.of(CHAT_2);
+
+		mockMvc.perform(get("/api/penpal/monitors/chats/" +  CHAT_2.getId())
+				.with(MONITOR_AUTH))
+			.andExpect(status().isOk())
+			.andExpect(content().json(objectMapper.writeValueAsString(expected), true))
+			.andReturn();
+
+	}
+
+	@Test
+	void monitor_canRead_listOfAll_Messages() throws Exception {
+
+		List<MessageMonitorView> expected = List.of(
+			MessageMonitorView.of(MSG_1),
+			MessageMonitorView.of(MSG_2),
+			MessageMonitorView.of(MSG_3),
+			MessageMonitorView.of(BLAST_1),
+			MessageMonitorView.of(BLAST_2));
+
+		mockMvc.perform(get("/api/penpal/monitors/messages/all")
+				.with(MONITOR_AUTH))
+			.andExpect(status().isOk())
+			.andExpect(content().json(objectMapper.writeValueAsString(expected), false)) // can be out of order
+			.andReturn();
+
+	}
+
+	@Test
+	void monitor_canRead_listOfAll_Unapproved_Messages() throws Exception {
+
+		List<MessageMonitorView> expected = List.of(MessageMonitorView.of(MSG_2));
+
+		mockMvc.perform(get("/api/penpal/monitors/messages/unapproved")
+				.with(MONITOR_AUTH))
+			.andExpect(status().isOk())
+			.andExpect(content().json(objectMapper.writeValueAsString(expected), true))
+			.andReturn();
+
+	}
+
+	@Test
+	void monitor_canRead_listOfAll_Chats() throws Exception {
+
+		List<ChatMonitorView> expected = List.of(
+			ChatMonitorView.of(CHAT_1),
+			ChatMonitorView.of(CHAT_2));
+
+		mockMvc.perform(get("/api/penpal/monitors/chats/all")
+				.with(MONITOR_AUTH))
+			.andExpect(status().isOk())
+			.andExpect(content().json(objectMapper.writeValueAsString(expected), false)) //can be out of order
+			.andReturn();
+
+	}
+
 	///////////////////////////////////////////////////////////////
 	// UPDATE
+
+	@Test
+	void monitor_canEditText_AnyMessage() throws Exception {
+		UpdateMessageTextOnlyRequest message1Update = new UpdateMessageTextOnlyRequest("There are no strings on me!");
+
+		mockMvc.perform(put("/api/penpal/monitors/messages/" + MSG_2.getId())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(message1Update))
+				.with(MONITOR_AUTH))
+			.andExpect(status().isNoContent())
+			.andReturn();
+
+		MessageMonitorView expected = new MessageMonitorView(
+			MSG_2.getId(),
+			message1Update.text(),
+			PenpalMonitorView.of(MSG_2.getPenpalAuthor()),
+			MSG_2.getCreateTime(),
+			ChatMonitorView.of(MSG_2.getChat()),
+			MSG_2.getApproved(),
+			MSG_2.getApprovedTime());
+
+		mockMvc.perform(get("/api/penpal/monitors/messages/" + MSG_2.getId())
+				.with(MONITOR_AUTH))
+			.andExpect(status().isOk())
+			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
+	}
+
+	@Test
+	void monitor_canEditApproval_AnyMessage() throws Exception {
+		ApprovalMessageRequest message1Update = new ApprovalMessageRequest(true);
+
+		mockMvc.perform(put("/api/penpal/monitors/messages/" + MSG_1.getId() + "/approval")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(message1Update))
+				.with(MONITOR_AUTH))
+			.andExpect(status().isNoContent())
+			.andReturn();
+
+		MvcResult res = mockMvc.perform(get("/api/penpal/monitors/messages/" + MSG_1.getId())
+				.with(MONITOR_AUTH))
+			.andExpect(status().isOk())
+			.andReturn();
+
+		MessageMonitorView actual = objectMapper.readValue(
+			res.getResponse().getContentAsString(), MessageMonitorView.class);
+
+		MessageMonitorView expected = new MessageMonitorView(
+			MSG_1.getId(),
+			MSG_1.getText(),
+			PenpalMonitorView.of(MSG_1.getPenpalAuthor()),
+			MSG_1.getCreateTime(),
+			ChatMonitorView.of(MSG_1.getChat()),
+			true,
+			actual.approvedTime());
+
+		mockMvc.perform(get("/api/penpal/monitors/messages/" + MSG_1.getId())
+				.with(MONITOR_AUTH))
+			.andExpect(status().isOk())
+			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
+	}
+
+	@Test
+	void monitor_canEditRemove_AnyMessage_FromChat() throws Exception {
+		mockMvc.perform(delete("/api/penpal/monitors/messages/" + MSG_2.getId() + "/chats/" + MSG_2.getChat().getId())
+				.with(MONITOR_AUTH))
+			.andExpect(status().isNoContent())
+			.andReturn();
+
+		MessageMonitorView expected = new MessageMonitorView(
+			MSG_2.getId(),
+			MSG_2.getText(),
+			PenpalMonitorView.of(MSG_2.getPenpalAuthor()),
+			MSG_2.getCreateTime(),
+			null,
+			MSG_2.getApproved(),
+			MSG_2.getApprovedTime());
+
+		mockMvc.perform(get("/api/penpal/monitors/messages/" + MSG_2.getId())
+				.with(MONITOR_AUTH))
+			.andExpect(status().isOk())
+			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
+
+		ChatMonitorView expectedChat = ChatMonitorView.of(MSG_2.getChat());
+
+		mockMvc.perform(get("/api/penpal/monitors/chats/" +  MSG_2.getChat().getId())
+				.with(MONITOR_AUTH))
+			.andExpect(status().isOk())
+			.andExpect(content().json(objectMapper.writeValueAsString(expectedChat), true))
+			.andReturn();
+	}
+
 }

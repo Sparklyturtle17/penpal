@@ -115,7 +115,7 @@ public class PenpalControllerTest extends ControllerTestBase {
 	// CREATE
 
 	@Test
-	void guardianActingAs_TheirPenpal_canCreateMessage() throws Exception {
+	void guardianActingAs_TheirPenpal_canCreateMessage_inMyChat() throws Exception {
 		CreateNewMessageRequest req = new CreateNewMessageRequest(MSG_1.getText(), MSG_1.getChat().getId());
 
 		MvcResult created = mockMvc.perform(post("/api/penpal/penpals/messages")
@@ -146,6 +146,18 @@ public class PenpalControllerTest extends ControllerTestBase {
 			actual.createTime());
 
 		assertThat(actual).isEqualTo(expected);
+	}
+
+	@Test
+	void guardianActingAs_TheirPenpal_cannotCreateMessage_NotInMyChat() throws Exception {
+		CreateNewMessageRequest req = new CreateNewMessageRequest(MSG_1.getText(), MSG_1.getChat().getId());
+
+		mockMvc.perform(post("/api/penpal/penpals/messages")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req))
+				.header(ActingAsPenpalFilter.HEADER, CARLOS.getId())
+				.with(httpBasic(HUGO.getAuthId(), HUGO.getAuthId())))
+			.andExpect(status().isForbidden());
 	}
 
 	///////////////////////////////////////////////////////////////
@@ -255,7 +267,7 @@ public class PenpalControllerTest extends ControllerTestBase {
 
 	@Test
 	void guardianActingAs_TheirPenpal_cannotUpdate_Mine_Message_Approval() throws Exception {
-		ApprovalMessageRequest message1Update = new ApprovalMessageRequest(MSG_1.getId(), true);
+		ApprovalMessageRequest message1Update = new ApprovalMessageRequest(true);
 
 		mockMvc.perform(put("/api/penpal/penpals/messages/" + MSG_1.getId())
 				.contentType(MediaType.APPLICATION_JSON)

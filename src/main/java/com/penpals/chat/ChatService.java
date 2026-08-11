@@ -2,6 +2,7 @@ package com.penpals.chat;
 
 import com.penpals.chat.dto.CreateChatRequest;
 import com.penpals.chat.message.Message;
+import com.penpals.chat.message.MessageService;
 import com.penpals.common.exceptions.NotFoundException;
 import com.penpals.users.penpal.Penpal;
 import com.penpals.users.penpal.PenpalRepository;
@@ -14,6 +15,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ChatService {
+
 	private final ChatRepository chatRepository;
 	private final PenpalRepository penpalRepository;
 
@@ -47,6 +49,16 @@ public class ChatService {
 			.orElseThrow(() -> new NotFoundException("No message " + id));
 	}
 
+	public Chat findById (Long id) {
+		return chatRepository.findById(id)
+			.orElseThrow(() -> new NotFoundException("No message " + id));
+	}
+
+	public List<Chat> findAll () {
+		return chatRepository.findAll();
+	}
+
 	///////////////////////////////////////////////////////////////
 	// UPDATE
+
 }

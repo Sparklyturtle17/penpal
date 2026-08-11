@@ -95,7 +95,7 @@ public class PenpalController {
 
 	@PutMapping("/messages/{messageId}")
 	public ResponseEntity<Void> updateMessageText(@Valid @RequestBody MessageRequests.UpdateMessageTextOnlyRequest request, @RequestAttribute(name = ActingAsPenpalFilter.ACTIVE_PENPAL_ATTR) Long penpalId, @PathVariable Long messageId) {
-		messageService.updateMessageText(request, messageId, penpalId, currentUserService.currentId());
+		messageService.updateMessageTextForPenpal(request, messageId, penpalId, currentUserService.currentId());
 		return ResponseEntity.noContent().build();
 	}
 }

@@ -1,6 +1,16 @@
 package com.penpals.access.monitor;
 
+import com.penpals.access.CurrentUserService;
+import com.penpals.chat.ChatService;
+import com.penpals.chat.dto.ChatViews;
+import com.penpals.chat.dto.ChatViews.*;
+import com.penpals.chat.dto.MessageRequests.*;
+import com.penpals.chat.dto.MessageViews;
+import com.penpals.chat.dto.MessageViews.*;
+import com.penpals.chat.message.Message;
+import com.penpals.chat.message.MessageService;
 import com.penpals.common.ApiResponses;
+import com.penpals.common.config.ActingAsPenpalFilter;
 import com.penpals.users.AppUser;
 import com.penpals.users.AppUserService;
 import com.penpals.users.RoleEnum;
@@ -18,6 +28,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -29,6 +40,9 @@ public class MonitorController {
 
 	private final PenpalService penpalService;
 	private final AppUserService appUserService;
+	private final MessageService messageService;
+	private final CurrentUserService currentUserService;
+	private final ChatService chatService;
 
 	//╔═════════════════════════════════════════════════════════╗
 	//║                          USERS                          ║
@@ -112,9 +126,58 @@ public class MonitorController {
 	///////////////////////////////////////////////////////////////
 	// CREATE
 
+	@PostMapping("/messages")
+	public ResponseEntity<Void> createBlastMessage(@Valid @RequestBody CreateBlastMessageRequest request) {
+		List<Message> created = messageService.broadcastToAllChats(request, currentUserService.currentId());
+		return ApiResponses.created(created.getFirst().getId());
+	}
+
 	///////////////////////////////////////////////////////////////
 	// READ
 
+	@GetMapping("/messages/{id}")
+	public MessageMonitorView viewMessage(@PathVariable Long id) {
+		return MessageMonitorView.of(messageService.findById(id));
+	}
+
+	@GetMapping("/messages/all")
+	public List<MessageMonitorView> viewAllMessages() {
+		return messageService.findAll().stream().map(MessageMonitorView::of).toList();
+	}
+
+	@GetMapping("/messages/unapproved")
+	public List<MessageMonitorView> viewAllUnapprovedMessages() {
+		return messageService.findAllUnreviewed().stream().map(MessageMonitorView::of).toList();
+	}
+
+	@GetMapping("/chats/{id}")
+	public ChatMonitorView viewChat(@PathVariable Long id) {
+		return ChatMonitorView.of(chatService.findById(id));
+	}
+
+	@GetMapping("/chats/all")
+	public List<ChatMonitorView> viewAllChats() {
+		return chatService.findAll().stream().map(ChatMonitorView::of).toList();
+	}
+
 	///////////////////////////////////////////////////////////////
 	// UPDATE
+
+	@PutMapping("/messages/{id}")
+	public ResponseEntity<Void> updateMessageText(@PathVariable Long id, @Valid @RequestBody UpdateMessageTextOnlyRequest request) {
+		messageService.updateMessageTextForMonitor(request, id, currentUserService.currentId());
+		return ResponseEntity.noContent().build();
+	}
+
+	@PutMapping("/messages/{id}/approval")
+	public ResponseEntity<Void> updateMessageApproval(@PathVariable Long id, @Valid @RequestBody ApprovalMessageRequest request) {
+		messageService.approveMessage(request, id, currentUserService.currentId());
+		return ResponseEntity.noContent().build();
+	}
+
+	@DeleteMapping("/messages/{messageId}/chats/{chatId}")
+	public ResponseEntity<Void> updateChatRemoveMessage(@PathVariable Long messageId, @PathVariable Long chatId) {
+		messageService.fakeRemoveMessage(messageId, chatId, currentUserService.currentId());
+		return ResponseEntity.noContent().build();
+	}
 }

@@ -24,8 +24,7 @@ public class Message {
 	@Column(nullable = false)
 	private String text;
 
-	@JoinColumn(nullable = false)
-	@ManyToOne
+	@ManyToOne(optional = true)
 	private Penpal penpalAuthor;
 
 	@JoinColumn(nullable = false)
@@ -35,8 +34,7 @@ public class Message {
 	@Column(nullable = false)
 	private Instant createTime;
 
-	@JoinColumn(nullable = false)
-	@ManyToOne
+	@ManyToOne(optional = true)
 	private Chat chat;
 
 	private Boolean approved;

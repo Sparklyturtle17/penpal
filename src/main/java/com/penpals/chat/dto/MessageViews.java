@@ -15,10 +15,17 @@ public interface MessageViews {
 		Instant createTime
 	) {
 		public static MessageSimpleView of(Message m) {
+			PenpalBioView author = null;
+			if (m.getPenpalAuthor() == null) {
+				author = new PenpalBioView(null, m.getPerformedBy().getFirstName(), null, null, null);
+			} else {
+				author = PenpalBioView.of(m.getPenpalAuthor());
+			}
+
 			return new MessageSimpleView(
 				m.getId(),
 				m.getText(),
-				PenpalBioView.of(m.getPenpalAuthor()),
+				author,
 				m.getCreateTime()
 			);
 		}
@@ -34,12 +41,19 @@ public interface MessageViews {
 		Instant approvedTime
 	) {
 		public static MessageMonitorView of(Message m) {
+			PenpalMonitorView author = null;
+			if (m.getPenpalAuthor() == null) {
+				author = new PenpalMonitorView(m.getPerformedBy().getId(), m.getPerformedBy().getFirstName(), m.getPerformedBy().getLastName(), null, null, "~ a monitor", null);
+			} else {
+				author = PenpalMonitorView.of(m.getPenpalAuthor());
+			}
+
 			return new MessageMonitorView(
 				m.getId(),
 				m.getText(),
-				PenpalMonitorView.of(m.getPenpalAuthor()),
+				author,
 				m.getCreateTime(),
-				ChatMonitorView.of(m.getChat()),
+				m.getChat() == null ? null : ChatMonitorView.of(m.getChat()),
 				m.getApproved(),
 				m.getApprovedTime()
 			);

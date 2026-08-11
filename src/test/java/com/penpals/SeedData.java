@@ -135,6 +135,12 @@ public final class SeedData {
 	public static final Message MSG_3 = message(3, "Hola Diana, do you like music?",
 		CARLOS, HUGO, Instant.parse("2026-07-02T14:00:00Z"), CHAT_2, true, MONA, Instant.parse("2026-07-02T14:10:00Z"));
 
+	// Monitor "blast": one message per active chat. No penpal author; performedBy/approvedBy = the monitor (Mona).
+	public static final Message BLAST_1 = message(4, "Reminder: always be kind online!",
+		null, MONA, Instant.parse("2026-07-03T12:00:00Z"), CHAT_1, true, MONA, Instant.parse("2026-07-03T12:00:00Z"));
+	public static final Message BLAST_2 = message(5, "Reminder: always be kind online!",
+		null, MONA, Instant.parse("2026-07-03T12:00:00Z"), CHAT_2, true, MONA, Instant.parse("2026-07-03T12:00:00Z"));
+
 	// message_audit: pre-edit snapshots. editedBy = who edited; message rows copied from the audited message.
 	public static final MessageAudit AUDIT_1 = audit(1, Instant.parse("2026-07-01T09:02:00Z"), ALICE,
 		MSG_1, "Hi Bob",     ALICE, PAT,   Instant.parse("2026-07-01T09:00:00Z"), CHAT_1, null, null, null);
