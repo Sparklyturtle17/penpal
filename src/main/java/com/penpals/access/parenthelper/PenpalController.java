@@ -2,6 +2,7 @@ package com.penpals.access.parenthelper;
 
 import com.penpals.access.CurrentUserService;
 import com.penpals.chat.ChatService;
+import com.penpals.chat.dto.ChatMessagesView.*;
 import com.penpals.chat.dto.ChatViews.*;
 import com.penpals.chat.dto.MessageRequests;
 import com.penpals.chat.dto.MessageRequests.*;
@@ -20,6 +21,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/penpal/penpals")
@@ -84,11 +87,14 @@ public class PenpalController {
 	}
 
 	@GetMapping("/chats/{id}")
-	public ChatSimpleView viewChat(@PathVariable Long id, @RequestAttribute(ActingAsPenpalFilter.ACTIVE_PENPAL_ATTR) Long penpalId) {
-		return ChatSimpleView.of(chatService.findMyChatById(id, penpalId));
+	public SimpleChatMessageView viewChat(@PathVariable Long id, @RequestAttribute(ActingAsPenpalFilter.ACTIVE_PENPAL_ATTR) Long penpalId) {
+		return chatService.findMyChatById(id, penpalId);
 	}
 
-
+	@GetMapping("/chats")
+	public List<ChatSimpleView> myChats(@RequestAttribute(ActingAsPenpalFilter.ACTIVE_PENPAL_ATTR) Long penpalId) {
+		return chatService.findAllForPenpal(penpalId).stream().map(ChatSimpleView::of).toList();
+	}
 
 	///////////////////////////////////////////////////////////////
 	// UPDATE

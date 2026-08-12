@@ -2,6 +2,7 @@ package com.penpals.access;
 
 import com.penpals.users.AppUser;
 import com.penpals.users.AppUserRepository;
+import com.penpals.users.dto.CreateAppUserRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

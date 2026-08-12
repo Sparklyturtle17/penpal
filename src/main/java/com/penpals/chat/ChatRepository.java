@@ -20,4 +20,7 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
 	Optional<Chat> findByIdAndEligiblePenpals(@Param("id") Long id, @Param("penpalId") Long penpalId);
 
 	List<Chat> findAllByActiveTrue();
+
+	@Query("select distinct c from Chat c join c.members m where m.id = :penpalId")
+	List<Chat> findAllByMemberId(@Param("penpalId") Long penpalId);
 }

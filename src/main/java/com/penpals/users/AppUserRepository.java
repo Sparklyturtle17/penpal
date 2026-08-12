@@ -17,6 +17,8 @@ public interface AppUserRepository extends JpaRepository<AppUser, Long> {
 
 	List<AppUser> findAllByOrderByRoleAsc();
 
+	List<AppUser> findAllByRole(RoleEnum roleEnum);
+
 	// returning users
 	Optional<AppUser> findByAuthId(String authId);
 

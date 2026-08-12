@@ -25,14 +25,16 @@ public interface ChatViews {
 
 	record ChatSimpleView(
 		Long id,
-		List<PenpalBioView> members
+		List<PenpalBioView> members,
+		Boolean active
 	) {
 		public static ChatSimpleView of(Chat c) {
 			List<PenpalBioView> members = c.getMembers().stream().map(PenpalBioView::of).toList();
 
 			return new ChatSimpleView(
 				c.getId(),
-				members
+				members,
+				c.getActive()
 			);
 		}
 	}

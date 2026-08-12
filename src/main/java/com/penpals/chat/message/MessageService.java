@@ -52,7 +52,7 @@ public class MessageService {
 		m.setPerformedBy(performedBy);
 		m.setCreateTime(Instant.now());
 		m.setChat(chat);
-		m.setApproved(false);
+		m.setApproved(null);   // pending until a monitor approves (null = awaiting review)
 
 		return messageRepository.save(m);
 	}

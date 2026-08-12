@@ -4,6 +4,8 @@ import com.penpals.common.exceptions.NotFoundException;
 import com.penpals.users.dto.CreateAppUserRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.Collection;
 import java.util.List;
 
 @Service
@@ -42,6 +44,11 @@ public class AppUserService {
 
 	public List<AppUser> findAllOrderedByRole() {
 		return appUserRepository.findAllByOrderByRoleAsc();
+	}
+
+
+	public List<AppUser> findAllByRole(RoleEnum roleEnum) {
+		return appUserRepository.findAllByRole(roleEnum);
 	}
 
 	public AppUser findById(Long id) {

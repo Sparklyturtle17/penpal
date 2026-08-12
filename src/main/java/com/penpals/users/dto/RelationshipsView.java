@@ -9,8 +9,7 @@ public interface RelationshipsView {
 
 	// MAP 1 — monitor: one per chat, both penpals admin (each nests its guardian)
 	record MonitorMapRelationshipView (
-		PenpalMonitorView penpalOne,
-		PenpalMonitorView penpalTwo
+		List<GuardianMapRelationshipView> fullMap
 	) {}
 
 	// MAP 2 — parent/helper: guardian once, then their penpals (admin) each with a bio companion
@@ -21,7 +20,7 @@ public interface RelationshipsView {
 
 	record PenpalWithCompanion(
 		PenpalMonitorView penpal,
-		PenpalBioView companion
+		PenpalMonitorView companion
 	) {}
 
 	// MAP 3 — penpal: self + companion, both bio

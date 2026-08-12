@@ -2,6 +2,8 @@ package com.penpals.access;
 
 import com.penpals.common.config.ActingAsPenpalFilter;
 import com.penpals.users.dto.AppUserViews.UserFullView;
+import com.penpals.users.dto.CreateAppUserRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;

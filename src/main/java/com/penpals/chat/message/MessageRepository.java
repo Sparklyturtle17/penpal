@@ -9,6 +9,19 @@ import java.util.Optional;
 
 public interface MessageRepository extends JpaRepository<Message, Long> {
 
+	List<Message> findAllByChatId(Long chatId);
+
+	// what a penpal may see in their chat: all of their OWN messages (any approval
+	// state) plus everyone else's only once approved. Blasts have a null author, so
+	// they surface via the approved branch.
+	@Query("""
+	    select m from Message m
+	    where m.chat.id = :chatId
+	      and (m.penpalAuthor.id = :penpalId or m.approved = true)
+	    order by m.id
+	""")
+	List<Message> findVisibleInChatForPenpal(@Param("chatId") Long chatId, @Param("penpalId") Long penpalId);
+
 	// the penpal is either the penpalAuthor or
 	// the other penpal in the same chat as the message is in
 	@Query("""

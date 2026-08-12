@@ -1,9 +1,12 @@
 package com.penpals.access.parenthelper;
 
 import com.penpals.ControllerTestBase;
+import com.penpals.chat.dto.ChatMessagesView.*;
 import com.penpals.chat.dto.ChatViews.*;
 import com.penpals.chat.dto.MessageRequests.*;
 import com.penpals.chat.dto.MessageViews.*;
+
+import java.util.List;
 import com.penpals.common.config.ActingAsPenpalFilter;
 import com.penpals.users.dto.PenpalViews.*;
 import com.penpals.users.dto.RelationshipsView.*;
@@ -48,7 +51,7 @@ public class PenpalControllerTest extends ControllerTestBase {
 
 	@Test
 	void guardianActingAs_TheirPenpal_cannotHit_ParentHelperEndpoint() throws Exception {
-		mockMvc.perform(get("/api/penpal/parent-helpers/my-penpals-companions")
+		mockMvc.perform(get("/api/penpal/parent-helpers/my-penpals/"+ BOB.getId())
 				.header(ActingAsPenpalFilter.HEADER, BOB.getId())
 				.with(PARENT_HELPER_AUTH))
 			.andExpect(status().isForbidden());
@@ -143,7 +146,8 @@ public class PenpalControllerTest extends ControllerTestBase {
 			newId,
 			req.text(),
 			PenpalBioView.of(MSG_1.getPenpalAuthor()),
-			actual.createTime());
+			actual.createTime(),
+			actual.approved());
 
 		assertThat(actual).isEqualTo(expected);
 	}
@@ -166,7 +170,7 @@ public class PenpalControllerTest extends ControllerTestBase {
 	@Test
 	void guardianActingAs_TheirPenpal_canRead_Mine_Message() throws Exception {
 
-		MessageSimpleView expected = new MessageSimpleView(MSG_1.getId(), MSG_1.getText(), PenpalBioView.of(MSG_1.getPenpalAuthor()), MSG_1.getCreateTime());
+		MessageSimpleView expected = new MessageSimpleView(MSG_1.getId(), MSG_1.getText(), PenpalBioView.of(MSG_1.getPenpalAuthor()), MSG_1.getCreateTime(), MSG_1.getApproved());
 
 		mockMvc.perform(get("/api/penpal/penpals/messages/" +  MSG_1.getId())
 				.header(ActingAsPenpalFilter.HEADER, ALICE.getId())
@@ -180,7 +184,7 @@ public class PenpalControllerTest extends ControllerTestBase {
 	@Test
 	void guardianActingAs_TheirPenpal_canRead_Companion_Message() throws Exception {
 
-		MessageSimpleView expected = new MessageSimpleView(MSG_1.getId(), MSG_1.getText(), PenpalBioView.of(MSG_1.getPenpalAuthor()), MSG_1.getCreateTime());
+		MessageSimpleView expected = new MessageSimpleView(MSG_1.getId(), MSG_1.getText(), PenpalBioView.of(MSG_1.getPenpalAuthor()), MSG_1.getCreateTime(), MSG_1.getApproved());
 
 		mockMvc.perform(get("/api/penpal/penpals/messages/" +  MSG_1.getId())
 				.header(ActingAsPenpalFilter.HEADER, BOB.getId())
@@ -204,7 +208,11 @@ public class PenpalControllerTest extends ControllerTestBase {
 	@Test
 	void guardianActingAs_TheirPenpal_canRead_EntireChat() throws Exception {
 
-		ChatSimpleView expected = ChatSimpleView.of(CHAT_2);
+		// the penpal chat view now bundles the chat with its messages (SimpleChatMessageView)
+		SimpleChatMessageView expected = new SimpleChatMessageView(
+			ChatSimpleView.of(CHAT_2),
+			List.of(MessageSimpleView.of(MSG_3), MessageSimpleView.of(BLAST_2),
+				MessageSimpleView.of(MSG_9), MessageSimpleView.of(MSG_10), MessageSimpleView.of(MSG_11)));
 
 		mockMvc.perform(get("/api/penpal/penpals/chats/" +  CHAT_2.getId())
 				.header(ActingAsPenpalFilter.HEADER, CARLOS.getId())
@@ -216,6 +224,38 @@ public class PenpalControllerTest extends ControllerTestBase {
 	}
 
 	@Test
+	void guardianActingAs_TheirPenpal_readingChat_hidesCompanionsUnapprovedMessages() throws Exception {
+		// Acting as Alice on chat 1: she sees her own approved message (MSG_1) and the
+		// approved blast (BLAST_1), but NOT Bob's still-pending message (MSG_2).
+		SimpleChatMessageView expected = new SimpleChatMessageView(
+			ChatSimpleView.of(CHAT_1),
+			List.of(MessageSimpleView.of(MSG_1), MessageSimpleView.of(BLAST_1),
+				MessageSimpleView.of(MSG_6), MessageSimpleView.of(MSG_7), MessageSimpleView.of(MSG_8)));
+
+		mockMvc.perform(get("/api/penpal/penpals/chats/" + CHAT_1.getId())
+				.header(ActingAsPenpalFilter.HEADER, ALICE.getId())
+				.with(httpBasic(PAT.getAuthId(), PAT.getAuthId())))
+			.andExpect(status().isOk())
+			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
+	}
+
+	@Test
+	void guardianActingAs_TheirPenpal_readingChat_showsTheirOwnUnapprovedMessages() throws Exception {
+		// Acting as Bob on chat 1: he sees Alice's approved message, the approved blast,
+		// AND his own message (MSG_2) even though it is still pending.
+		SimpleChatMessageView expected = new SimpleChatMessageView(
+			ChatSimpleView.of(CHAT_1),
+			List.of(MessageSimpleView.of(MSG_1), MessageSimpleView.of(MSG_2), MessageSimpleView.of(BLAST_1),
+				MessageSimpleView.of(MSG_6), MessageSimpleView.of(MSG_7)));
+
+		mockMvc.perform(get("/api/penpal/penpals/chats/" + CHAT_1.getId())
+				.header(ActingAsPenpalFilter.HEADER, BOB.getId())
+				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
+			.andExpect(status().isOk())
+			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
+	}
+
+	@Test
 	void guardianActingAs_TheirPenpal_cannotRead_NotMyChat() throws Exception {
 
 		mockMvc.perform(get("/api/penpal/penpals/chats/" +  CHAT_2.getId())
@@ -223,6 +263,37 @@ public class PenpalControllerTest extends ControllerTestBase {
 				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
 			.andExpect(status().isNotFound());
 
+	}
+
+	@Test
+	void penpalActingAs_readsTheirChats() throws Exception {
+		// Acting as Bob: exactly his one chat (CHAT_1 with Alice), nothing else.
+		List<ChatSimpleView> expected = List.of(ChatSimpleView.of(CHAT_1));
+
+		mockMvc.perform(get("/api/penpal/penpals/chats")
+				.header(ActingAsPenpalFilter.HEADER, BOB.getId())
+				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
+			.andExpect(status().isOk())
+			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
+	}
+
+	@Test
+	void penpalActingAs_chatlessPenpal_readsEmpty() throws Exception {
+		// Omar (guarded by Quinn) is in no chat yet -> empty list.
+		mockMvc.perform(get("/api/penpal/penpals/chats")
+				.header(ActingAsPenpalFilter.HEADER, OMAR.getId())
+				.with(httpBasic(QUINN.getAuthId(), QUINN.getAuthId())))
+			.andExpect(status().isOk())
+			.andExpect(content().json("[]", true));
+	}
+
+	@Test
+	void guardianActingAs_penpalNotTheirs_cannotReadChats() throws Exception {
+		// Helen guards Bob, not Carlos -> the acting-as filter rejects with 403.
+		mockMvc.perform(get("/api/penpal/penpals/chats")
+				.header(ActingAsPenpalFilter.HEADER, CARLOS.getId())
+				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
+			.andExpect(status().isForbidden());
 	}
 
 	///////////////////////////////////////////////////////////////
@@ -244,7 +315,8 @@ public class PenpalControllerTest extends ControllerTestBase {
 			MSG_1.getId(),
 			message1Update.text(),
 			PenpalBioView.of(MSG_1.getPenpalAuthor()),
-			MSG_1.getCreateTime());
+			MSG_1.getCreateTime(),
+			MSG_1.getApproved());
 
 		mockMvc.perform(get("/api/penpal/penpals/messages/" + MSG_1.getId())
 				.header(ActingAsPenpalFilter.HEADER, ALICE.getId())

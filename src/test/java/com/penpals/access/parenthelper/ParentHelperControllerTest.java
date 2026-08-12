@@ -39,29 +39,29 @@ public class ParentHelperControllerTest extends ControllerTestBase {
 
 	@Test
 	void guardianActingAsTheirPenpal_cannotHitParentHelperEndpoint() throws Exception {
-		mockMvc.perform(get("/api/penpal/parent-helpers/my-penpals-companions")
-				.header(ActingAsPenpalFilter.HEADER, "2")
+		mockMvc.perform(get("/api/penpal/parent-helpers/my-penpals/" + BOB.getId())
+				.header(ActingAsPenpalFilter.HEADER, BOB.getId())
 				.with(PARENT_HELPER_AUTH))
 			.andExpect(status().isForbidden());
 	}
 
 	@Test
 	void parentHelper_canHitParentHelperEndpoint() throws Exception {
-		mockMvc.perform(get("/api/penpal/parent-helpers/my-penpals-companions")
+		mockMvc.perform(get("/api/penpal/parent-helpers/my-penpals/" + BOB.getId())
 				.with(PARENT_HELPER_AUTH))
 			.andExpect(status().isOk());
 	}
 
 	@Test
 	void monitor_cannotHitParentHelperEndpoint() throws Exception {
-		mockMvc.perform(get("/api/penpal/parent-helpers/my-penpals-companions")
+		mockMvc.perform(get("/api/penpal/parent-helpers/my-penpals/" + BOB.getId())
 				.with(httpBasic("monitor", "monitor")))
 			.andExpect(status().isForbidden());
 	}
 
 	@Test
 	void admin_cannotHitParentHelperEndpoint() throws Exception {
-		mockMvc.perform(get("/api/penpal/parent-helpers/my-penpals-companions")
+		mockMvc.perform(get("/api/penpal/parent-helpers/my-penpals/" + BOB.getId())
 				.with(httpBasic("admin", "admin")))
 			.andExpect(status().isForbidden());
 	}
@@ -155,16 +155,48 @@ public class ParentHelperControllerTest extends ControllerTestBase {
 	///////////////////////////////////////////////////////////////
 	// READ
 
-	@Test
-	void parentHelper_readsRelationshipMap() throws Exception {
-		GuardianMapRelationshipView expected = new GuardianMapRelationshipView(
-			UserFullView.of(HELEN),
-			List.of(new PenpalWithCompanion(PenpalMonitorView.of(BOB), PenpalBioView.of(ALICE))));
+//	@Test
+//	void parentHelper_readsRelationshipMap() throws Exception {
+//		GuardianMapRelationshipView expected = new GuardianMapRelationshipView(
+//			UserFullView.of(HELEN),
+//			List.of(new PenpalWithCompanion(PenpalMonitorView.of(BOB), PenpalMonitorView.of(ALICE))));
+//
+//		mockMvc.perform(get("/api/penpal/parent-helpers/my-penpals-companions")
+//				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
+//			.andExpect(status().isOk())
+//			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
+//	}
 
-		mockMvc.perform(get("/api/penpal/parent-helpers/my-penpals-companions")
+	@Test
+	void parentHelper_readsAllMyPenpals() throws Exception {
+		// Pat guards two penpals; the list returns exactly those, ordered by id.
+		List<PenpalMonitorView> expected = List.of(
+			PenpalMonitorView.of(ALICE),
+			PenpalMonitorView.of(DIANA));
+
+		mockMvc.perform(get("/api/penpal/parent-helpers/my-penpals")
+				.with(httpBasic(PAT.getAuthId(), PAT.getAuthId())))
+			.andExpect(status().isOk())
+			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
+	}
+
+	@Test
+	void parentHelper_readsMyPenpals_onlyMine() throws Exception {
+		// Helen guards only Bob — strict compare proves no other guardian's penpals leak in.
+		List<PenpalMonitorView> expected = List.of(PenpalMonitorView.of(BOB));
+
+		mockMvc.perform(get("/api/penpal/parent-helpers/my-penpals")
 				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
 			.andExpect(status().isOk())
 			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
+	}
+
+	@Test
+	void guardianActingAsPenpal_cannotReadMyPenpals() throws Exception {
+		mockMvc.perform(get("/api/penpal/parent-helpers/my-penpals")
+				.header(ActingAsPenpalFilter.HEADER, BOB.getId())
+				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
+			.andExpect(status().isForbidden());
 	}
 
 	@Test
@@ -186,7 +218,7 @@ public class ParentHelperControllerTest extends ControllerTestBase {
 	}
 
 	@Test
-	void parentHelper_readsPenpalCompanion_Mine() throws Exception {
+	void parentHelper_readsPenpal_Companion_Mine() throws Exception {
 		PenpalBioView expected = PenpalBioView.of(ALICE);
 
 		mockMvc.perform(get("/api/penpal/parent-helpers/my-penpals-companions/" + BOB.getId())
@@ -196,7 +228,7 @@ public class ParentHelperControllerTest extends ControllerTestBase {
 	}
 
 	@Test
-	void parentHelper_cannotReadPenpalCompanion_NotMine() throws Exception {
+	void parentHelper_cannotReadPenpal_Companion_NotMine() throws Exception {
 		mockMvc.perform(get("/api/penpal/parent-helpers/my-penpals-companions/" + CARLOS.getId())
 				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
 			.andExpect(status().isForbidden());

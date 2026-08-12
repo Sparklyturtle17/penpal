@@ -1,8 +1,9 @@
 package com.penpals.chat;
 
+import com.penpals.chat.dto.ChatMessagesView.*;
 import com.penpals.chat.dto.CreateChatRequest;
 import com.penpals.chat.message.Message;
-import com.penpals.chat.message.MessageService;
+import com.penpals.chat.message.MessageRepository;
 import com.penpals.common.exceptions.NotFoundException;
 import com.penpals.users.penpal.Penpal;
 import com.penpals.users.penpal.PenpalRepository;
@@ -18,6 +19,7 @@ public class ChatService {
 
 	private final ChatRepository chatRepository;
 	private final PenpalRepository penpalRepository;
+	private final MessageRepository messageRepository;
 
 	///////////////////////////////////////////////////////////////
 	// CREATE
@@ -44,9 +46,16 @@ public class ChatService {
 	///////////////////////////////////////////////////////////////
 	// READ
 
-	public Chat findMyChatById (Long id, Long penpalId) {
-		return chatRepository.findByIdAndEligiblePenpals(id, penpalId)
+	public SimpleChatMessageView findMyChatById (Long id, Long penpalId) {
+		Chat chat = chatRepository.findByIdAndEligiblePenpals(id, penpalId)
 			.orElseThrow(() -> new NotFoundException("No message " + id));
+		// hide the companion's unapproved messages; keep all of the penpal's own
+		List<Message> messages = messageRepository.findVisibleInChatForPenpal(chat.getId(), penpalId);
+		return SimpleChatMessageView.of(chat, messages);
+	}
+
+	public List<Chat> findAllForPenpal(Long penpalId) {
+		return chatRepository.findAllByMemberId(penpalId);
 	}
 
 	public Chat findById (Long id) {
@@ -54,11 +63,19 @@ public class ChatService {
 			.orElseThrow(() -> new NotFoundException("No message " + id));
 	}
 
-	public List<Chat> findAll () {
-		return chatRepository.findAll();
+	public List<MonitorChatMessageView> findAll () {
+		return chatRepository.findAll().stream()
+			.map(c -> MonitorChatMessageView.of(c, messageRepository.findAllByChatId(c.getId())))
+			.toList();
 	}
 
 	///////////////////////////////////////////////////////////////
 	// UPDATE
+
+	public Chat updateChatActivation (Long id, boolean active) {
+		Chat chat = findById(id);
+		chat.setActive(active);
+		return chatRepository.save(chat);
+	}
 
 }

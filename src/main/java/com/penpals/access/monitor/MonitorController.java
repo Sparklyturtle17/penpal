@@ -1,16 +1,16 @@
 package com.penpals.access.monitor;
 
 import com.penpals.access.CurrentUserService;
+import com.penpals.chat.Chat;
 import com.penpals.chat.ChatService;
-import com.penpals.chat.dto.ChatViews;
+import com.penpals.chat.dto.ChatMessagesView.*;
 import com.penpals.chat.dto.ChatViews.*;
+import com.penpals.chat.dto.CreateChatRequest;
 import com.penpals.chat.dto.MessageRequests.*;
-import com.penpals.chat.dto.MessageViews;
 import com.penpals.chat.dto.MessageViews.*;
 import com.penpals.chat.message.Message;
 import com.penpals.chat.message.MessageService;
 import com.penpals.common.ApiResponses;
-import com.penpals.common.config.ActingAsPenpalFilter;
 import com.penpals.users.AppUser;
 import com.penpals.users.AppUserService;
 import com.penpals.users.RoleEnum;
@@ -28,8 +28,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/penpal/monitors")
@@ -43,6 +42,13 @@ public class MonitorController {
 	private final MessageService messageService;
 	private final CurrentUserService currentUserService;
 	private final ChatService chatService;
+	private final NaughtyWordsService naughtyWordsService;
+
+	// moderation word list — monitor/admin only (class-level @PreAuthorize gates it)
+	@GetMapping("/naughty-words")
+	public List<String> naughtyWords() {
+		return naughtyWordsService.words();
+	}
 
 	//╔═════════════════════════════════════════════════════════╗
 	//║                          USERS                          ║
@@ -87,7 +93,7 @@ public class MonitorController {
 	}
 
 	@GetMapping("/relations")
-	public List<MonitorMapRelationshipView> relations() {
+	public MonitorMapRelationshipView monitorRelationshipMap() {
 		return penpalService.monitorChatMap();
 	}
 
@@ -132,6 +138,12 @@ public class MonitorController {
 		return ApiResponses.created(created.getFirst().getId());
 	}
 
+	@PostMapping("/chats")
+	public ResponseEntity<Void> createChat(@Valid @RequestBody CreateChatRequest body) {
+		Chat chat = chatService.createChat(body);
+		return ApiResponses.created(chat.getId());
+	}
+
 	///////////////////////////////////////////////////////////////
 	// READ
 
@@ -156,8 +168,8 @@ public class MonitorController {
 	}
 
 	@GetMapping("/chats/all")
-	public List<ChatMonitorView> viewAllChats() {
-		return chatService.findAll().stream().map(ChatMonitorView::of).toList();
+	public List<MonitorChatMessageView> viewAllChats() {
+		return chatService.findAll();
 	}
 
 	///////////////////////////////////////////////////////////////
@@ -169,7 +181,7 @@ public class MonitorController {
 		return ResponseEntity.noContent().build();
 	}
 
-	@PutMapping("/messages/{id}/approval")
+	@PatchMapping("/messages/{id}/approval")
 	public ResponseEntity<Void> updateMessageApproval(@PathVariable Long id, @Valid @RequestBody ApprovalMessageRequest request) {
 		messageService.approveMessage(request, id, currentUserService.currentId());
 		return ResponseEntity.noContent().build();
@@ -178,6 +190,12 @@ public class MonitorController {
 	@DeleteMapping("/messages/{messageId}/chats/{chatId}")
 	public ResponseEntity<Void> updateChatRemoveMessage(@PathVariable Long messageId, @PathVariable Long chatId) {
 		messageService.fakeRemoveMessage(messageId, chatId, currentUserService.currentId());
+		return ResponseEntity.noContent().build();
+	}
+
+	@PatchMapping("/chats/{id}/activation")
+	public ResponseEntity<Void> updateChatActivation(@PathVariable Long id, @RequestParam boolean active) {
+		chatService.updateChatActivation(id, active);
 		return ResponseEntity.noContent().build();
 	}
 }

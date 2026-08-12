@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/penpal/parent-helpers")
 @PreAuthorize("hasAnyRole('PARENT_HELPER')")
@@ -39,10 +41,16 @@ public class ParentHelperController {
 
 	///////////////////////////////////////////////////////////////
 	// READ
+//
+//	@GetMapping("/my-penpals-companions")
+//	public GuardianMapRelationshipView relations() {
+//		return penpalService.guardianChatMap(currentUserService.currentId());
+//	}
 
-	@GetMapping("/my-penpals-companions")
-	public GuardianMapRelationshipView relations() {
-		return penpalService.guardianChatMap(currentUserService.currentId());
+	@GetMapping("/my-penpals")
+	public List<PenpalMonitorView> myPenpals() {
+		return penpalService.findAllForGuardian(currentUserService.currentId())
+			.stream().map(PenpalMonitorView::of).toList();
 	}
 
 	@GetMapping("/my-penpals/{id}")

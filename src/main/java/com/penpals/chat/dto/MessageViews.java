@@ -12,7 +12,8 @@ public interface MessageViews {
 		Long id,
 		String text,
 		PenpalBioView penpal,
-		Instant createTime
+		Instant createTime,
+		Boolean approved      // null = pending (the penpal sees their own not-yet-approved messages)
 	) {
 		public static MessageSimpleView of(Message m) {
 			PenpalBioView author = null;
@@ -26,7 +27,8 @@ public interface MessageViews {
 				m.getId(),
 				m.getText(),
 				author,
-				m.getCreateTime()
+				m.getCreateTime(),
+				m.getApproved()
 			);
 		}
 	}

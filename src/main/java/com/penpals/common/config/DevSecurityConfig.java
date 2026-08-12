@@ -47,9 +47,10 @@ public class DevSecurityConfig {
 		UserDetails parent_helper  = User.withUsername("parent_helper").password(encoder.encode("parent_helper")).roles(RoleEnum.PARENT_HELPER.name()).build();
 		UserDetails parent_helper_2 = User.withUsername("parent_helper_2").password(encoder.encode("parent_helper_2")).roles(RoleEnum.PARENT_HELPER.name()).build();
 		UserDetails parent_helper_3 = User.withUsername("parent_helper_3").password(encoder.encode("parent_helper_3")).roles(RoleEnum.PARENT_HELPER.name()).build();
+		UserDetails parent_helper_4 = User.withUsername("parent_helper_4").password(encoder.encode("parent_helper_4")).roles(RoleEnum.PARENT_HELPER.name()).build();
 		UserDetails monitor = User.withUsername("monitor").password(encoder.encode("monitor")).roles(RoleEnum.MONITOR.name()).build();
 		UserDetails admin   = User.withUsername("admin").password(encoder.encode("admin")).roles(RoleEnum.ADMIN.name()).build();
-		return new InMemoryUserDetailsManager(penpal, parent_helper, parent_helper_2, parent_helper_3, monitor, admin);
+		return new InMemoryUserDetailsManager(penpal, parent_helper, parent_helper_2, parent_helper_3, parent_helper_4, monitor, admin);
 	}
 
 	@Bean

@@ -13,7 +13,7 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -66,6 +66,10 @@ public class PenpalService {
 			.orElseThrow(() -> new NotFoundException("No penpal with id " + id));
 	}
 
+	public List<Penpal> findAllForGuardian(Long guardianId) {
+		return penpalRepository.findAllPenpalsByParentHelperId(guardianId);
+	}
+
 	public Penpal findByIdForGuardian(Long penpalId, Long guardianId) {
 		return penpalRepository.findByIdAndParentHelperId(penpalId, guardianId)
 			.orElseThrow(() -> new AccessDeniedException("Penpal " + penpalId + " is not yours"));
@@ -80,13 +84,36 @@ public class PenpalService {
 	/// Relationship views
 	///
 
-	// MAP 1 — monitor: every active chat, both penpals in admin view
-	public List<MonitorMapRelationshipView> monitorChatMap () {
-		return penpalRepository.findActiveChatPairs().stream()
-			.map(pair -> new MonitorMapRelationshipView (
-				PenpalMonitorView.of((Penpal) pair[0]),
-				PenpalMonitorView.of((Penpal) pair[1])))
-			.toList();
+	// MAP 1 — every guardian once (most penpals first); each penpal + companion shown
+	// exactly once. A guardian whose penpals are all already drawn (as companions) is dropped.
+	public MonitorMapRelationshipView monitorChatMap() {
+		List<GuardianMapRelationshipView> full =
+			appUserService.findAllByRole(RoleEnum.PARENT_HELPER).stream()
+				.map(g -> guardianChatMap(g.getId()))
+				.sorted(Comparator.comparingInt(
+					(GuardianMapRelationshipView v) -> v.penpals().size()).reversed())
+				.toList();
+
+		Set<Long> shown = new HashSet<>();
+		List<GuardianMapRelationshipView> map = new ArrayList<>();
+
+		for (GuardianMapRelationshipView gm : full) {
+			List<PenpalWithCompanion> rows = new ArrayList<>();
+			for (PenpalWithCompanion pc : gm.penpals()) {
+				if (shown.contains(pc.penpal().id())) continue;    // already drawn as a companion
+				shown.add(pc.penpal().id());
+				if (pc.companion() != null) shown.add(pc.companion().id());
+				rows.add(pc);
+			}
+			if (!rows.isEmpty()) {
+				map.add(new GuardianMapRelationshipView(gm.guardian(), rows));
+			} else if (gm.penpals().isEmpty()) {
+				// truly childless guardian — show as a lone node (not one whose
+				// penpals were all already drawn as companions elsewhere)
+				map.add(new GuardianMapRelationshipView(gm.guardian(), List.of()));
+			}
+		}
+		return new MonitorMapRelationshipView(map);
 	}
 
 	// MAP 2 — parent/helper: their penpals (admin) + each companion (bio), guardian once at the top
@@ -99,7 +126,7 @@ public class PenpalService {
 					Penpal comp = penpalRepository.findActiveChatCompanion(p.getId()).orElse(null);
 					return new PenpalWithCompanion (
 						PenpalMonitorView.of(p),
-						comp == null ? null : PenpalBioView.of(comp));
+						comp == null ? null : PenpalMonitorView.of(comp));
 				})
 				.toList();
 

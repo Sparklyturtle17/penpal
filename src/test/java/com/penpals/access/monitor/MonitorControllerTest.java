@@ -1,8 +1,10 @@
 package com.penpals.access.monitor;
 
 import com.penpals.ControllerTestBase;
+import com.penpals.chat.dto.ChatMessagesView.*;
 import com.penpals.chat.dto.ChatViews;
 import com.penpals.chat.dto.ChatViews.*;
+import com.penpals.chat.dto.CreateChatRequest;
 import com.penpals.chat.dto.MessageRequests.*;
 import com.penpals.chat.dto.MessageViews;
 import com.penpals.chat.dto.MessageViews.*;
@@ -28,6 +30,7 @@ import static com.penpals.SeedData.*;
 import static com.penpals.TestFixtures.Penpals.*;
 import static com.penpals.TestFixtures.Users.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -194,9 +197,22 @@ public class MonitorControllerTest extends ControllerTestBase {
 
 	@Test
 	void monitor_readsRelationshipMap() throws Exception {
-		List<MonitorMapRelationshipView> expected = List.of(
-			new MonitorMapRelationshipView(PenpalMonitorView.of(ALICE), PenpalMonitorView.of(BOB)),
-			new MonitorMapRelationshipView(PenpalMonitorView.of(CARLOS), PenpalMonitorView.of(DIANA)));
+		// grouped by guardian, ordered most -> fewest penpals — the exact shape the frontend map draws:
+		// each guardian once, branching to their penpals, each penpal with its companion.
+		// Deduped: Pat guards one penpal from each chat, so her two rows already cover
+		// all four chatting penpals + both chats. Helen & Hugo would only repeat
+		// Bob/Carlos (already shown as companions), so they drop out entirely.
+		// Quinn & Rosa each guard one of the chatless pair (Omar / Priya) — shown with
+		// no companion. Nia guards no penpal at all, so she is a lone (empty) node.
+		MonitorMapRelationshipView expected = new MonitorMapRelationshipView(List.of(
+			new GuardianMapRelationshipView(UserFullView.of(PAT), List.of(
+				new PenpalWithCompanion(PenpalMonitorView.of(ALICE), PenpalMonitorView.of(BOB)),
+				new PenpalWithCompanion(PenpalMonitorView.of(DIANA), PenpalMonitorView.of(CARLOS)))),
+			new GuardianMapRelationshipView(UserFullView.of(QUINN), List.of(
+				new PenpalWithCompanion(PenpalMonitorView.of(OMAR), null))),
+			new GuardianMapRelationshipView(UserFullView.of(ROSA), List.of(
+				new PenpalWithCompanion(PenpalMonitorView.of(PRIYA), null))),
+			new GuardianMapRelationshipView(UserFullView.of(NIA), List.of())));
 
 		mockMvc.perform(get("/api/penpal/monitors/relations")
 				.with(MONITOR_AUTH))
@@ -213,10 +229,15 @@ public class MonitorControllerTest extends ControllerTestBase {
 			UserFullView.of(HELEN),   // PARENT_HELPER
 			UserFullView.of(HUGO),
 			UserFullView.of(PAT),
+			UserFullView.of(NIA),
+			UserFullView.of(QUINN),
+			UserFullView.of(ROSA),
 			UserFullView.of(ALICE),   // PENPAL
 			UserFullView.of(BOB),
 			UserFullView.of(CARLOS),
-			UserFullView.of(DIANA));
+			UserFullView.of(DIANA),
+			UserFullView.of(OMAR),
+			UserFullView.of(PRIYA));
 
 		mockMvc.perform(get("/api/penpal/monitors/all-users")
 				.with(MONITOR_AUTH))
@@ -383,7 +404,7 @@ public class MonitorControllerTest extends ControllerTestBase {
 	// CREATE
 
 	@Test
-	void monitor_canCreateBlastMessage() throws Exception {
+	void monitor_canCreate_BlastMessage() throws Exception {
 		CreateBlastMessageRequest blastMessage = new CreateBlastMessageRequest("ANNOUNCEMENT");
 
 		MvcResult created = mockMvc.perform(post("/api/penpal/monitors/messages")
@@ -416,6 +437,28 @@ public class MonitorControllerTest extends ControllerTestBase {
 		);
 
 		Assertions.assertThat(actual).isEqualTo(expected);
+	}
+
+	@Test
+	void monitor_canCreate_Chat() throws Exception {
+		CreateChatRequest body = new CreateChatRequest(List.of(OMAR.getId(), PRIYA.getId()), true);
+
+		MvcResult created = mockMvc.perform(post("/api/penpal/monitors/chats")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(body))
+				.with(MONITOR_AUTH))
+			.andExpect(status().isCreated())
+			.andExpect(header().exists("Location"))
+			.andReturn();
+
+		String location = created.getResponse().getHeader("Location");
+
+		mockMvc.perform(get(URI.create(location))
+				.with(MONITOR_AUTH))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.active").value(true))
+			.andExpect(jsonPath("$.members[*].id",
+				containsInAnyOrder(OMAR.getId().intValue(), PRIYA.getId().intValue())));
 	}
 
 	///////////////////////////////////////////////////////////////
@@ -454,6 +497,12 @@ public class MonitorControllerTest extends ControllerTestBase {
 			MessageMonitorView.of(MSG_1),
 			MessageMonitorView.of(MSG_2),
 			MessageMonitorView.of(MSG_3),
+			MessageMonitorView.of(MSG_6),
+			MessageMonitorView.of(MSG_7),
+			MessageMonitorView.of(MSG_8),
+			MessageMonitorView.of(MSG_9),
+			MessageMonitorView.of(MSG_10),
+			MessageMonitorView.of(MSG_11),
 			MessageMonitorView.of(BLAST_1),
 			MessageMonitorView.of(BLAST_2));
 
@@ -468,7 +517,8 @@ public class MonitorControllerTest extends ControllerTestBase {
 	@Test
 	void monitor_canRead_listOfAll_Unapproved_Messages() throws Exception {
 
-		List<MessageMonitorView> expected = List.of(MessageMonitorView.of(MSG_2));
+		List<MessageMonitorView> expected = List.of(
+			MessageMonitorView.of(MSG_2), MessageMonitorView.of(MSG_8), MessageMonitorView.of(MSG_10));
 
 		mockMvc.perform(get("/api/penpal/monitors/messages/unapproved")
 				.with(MONITOR_AUTH))
@@ -481,9 +531,14 @@ public class MonitorControllerTest extends ControllerTestBase {
 	@Test
 	void monitor_canRead_listOfAll_Chats() throws Exception {
 
-		List<ChatMonitorView> expected = List.of(
-			ChatMonitorView.of(CHAT_1),
-			ChatMonitorView.of(CHAT_2));
+		// /chats/all now returns each chat bundled with its messages (MonitorChatMessageView)
+		List<MonitorChatMessageView> expected = List.of(
+			new MonitorChatMessageView(ChatMonitorView.of(CHAT_1),
+				List.of(MessageMonitorView.of(MSG_1), MessageMonitorView.of(MSG_2), MessageMonitorView.of(MSG_6),
+					MessageMonitorView.of(MSG_7), MessageMonitorView.of(MSG_8), MessageMonitorView.of(BLAST_1))),
+			new MonitorChatMessageView(ChatMonitorView.of(CHAT_2),
+				List.of(MessageMonitorView.of(MSG_3), MessageMonitorView.of(MSG_9), MessageMonitorView.of(MSG_10),
+					MessageMonitorView.of(MSG_11), MessageMonitorView.of(BLAST_2))));
 
 		mockMvc.perform(get("/api/penpal/monitors/chats/all")
 				.with(MONITOR_AUTH))
@@ -526,7 +581,7 @@ public class MonitorControllerTest extends ControllerTestBase {
 	void monitor_canEditApproval_AnyMessage() throws Exception {
 		ApprovalMessageRequest message1Update = new ApprovalMessageRequest(true);
 
-		mockMvc.perform(put("/api/penpal/monitors/messages/" + MSG_1.getId() + "/approval")
+		mockMvc.perform(patch("/api/penpal/monitors/messages/" + MSG_1.getId() + "/approval")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(message1Update))
 				.with(MONITOR_AUTH))
@@ -584,6 +639,24 @@ public class MonitorControllerTest extends ControllerTestBase {
 			.andExpect(status().isOk())
 			.andExpect(content().json(objectMapper.writeValueAsString(expectedChat), true))
 			.andReturn();
+	}
+
+	@Test
+	void monitor_canEditDeactivate_AnyChat() throws Exception {
+		mockMvc.perform(patch("/api/penpal/monitors/chats/" + CHAT_1.getId() + "/activation")
+				.param("active", "false")
+				.with(MONITOR_AUTH))
+			.andExpect(status().isNoContent());
+
+		ChatMonitorView expected = new ChatMonitorView(
+			CHAT_1.getId(),
+			List.of(PenpalMonitorView.of(ALICE), PenpalMonitorView.of(BOB)),
+			false);
+
+		mockMvc.perform(get("/api/penpal/monitors/chats/" + CHAT_1.getId())
+				.with(MONITOR_AUTH))
+			.andExpect(status().isOk())
+			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
 	}
 
 }
