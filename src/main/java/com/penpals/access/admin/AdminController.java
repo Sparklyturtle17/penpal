@@ -1,5 +1,7 @@
 package com.penpals.access.admin;
 
+import com.penpals.chat.dto.AuditViews.*;
+import com.penpals.chat.message.audit.MessageAuditService;
 import com.penpals.common.ApiResponses;
 import com.penpals.users.AppUser;
 import com.penpals.users.AppUserService;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class AdminController {
 
 	private final AppUserService appUserService;
+	private final MessageAuditService messageAuditService;
 
 	//╔═════════════════════════════════════════════════════════╗
 	//║                          USERS                          ║
@@ -51,6 +54,21 @@ public class AdminController {
 
 	///////////////////////////////////////////////////////////////
 	// READ
+
+	@GetMapping("/audits/messages/all")
+	public ListOfAudits getAuditsByMessage() {
+		return ListOfAudits.of(messageAuditService.getAuditRecordsByMessage());
+	}
+
+	@GetMapping("/audits/message/{messageId}")
+	public ListOfAudits getAuditsByMessageId(@PathVariable Long messageId) {
+		return ListOfAudits.of(messageAuditService.getAuditRecordsByMessageId(messageId));
+	}
+
+	@GetMapping("/audits/user/{appUserId}")
+	public ListOfAudits getAuditsTouchedByAppUser(@PathVariable Long appUserId) {
+		return ListOfAudits.of(messageAuditService.getAuditRecordsTouchedByAppUserId(appUserId));
+	}
 
 	///////////////////////////////////////////////////////////////
 	// UPDATE

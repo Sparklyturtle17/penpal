@@ -29,18 +29,18 @@ public class MessageAudit {
 	private AppUser editedBy;
 
 
-
 	///////////////////////////////////////////////////////////////
 
+
 	// message rows copied over
+	@JoinColumn(nullable = false)
 	@ManyToOne
 	private Message message;
 
 	@Column(nullable = false)
 	private String text;
 
-	@JoinColumn(nullable = false)
-	@ManyToOne
+	@ManyToOne(optional = true)
 	private Penpal penpalAuthor;
 
 	@JoinColumn(nullable = false)
@@ -50,8 +50,7 @@ public class MessageAudit {
 	@Column(nullable = false)
 	private Instant createTime;
 
-	@JoinColumn(nullable = false)
-	@ManyToOne
+	@ManyToOne(optional = true) // fake deleted will be null
 	private Chat chat;
 
 	private Boolean approved;

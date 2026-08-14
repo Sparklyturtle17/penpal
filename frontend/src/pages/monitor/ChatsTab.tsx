@@ -3,7 +3,7 @@ import { useApi, ApiError } from '../../api/useApi';
 import type { ChatMonitorView, MessageMonitorView, MonitorChatMessageView, PenpalMonitorView } from '../../types';
 import Modal from '../../components/Modal';
 import EditMessageModal from '../../components/EditMessageModal';
-import { NaughtyText } from '../../naughty';
+import { NaughtyBox } from '../../naughty';
 
 const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleString() : '—');
 const names = (m: PenpalMonitorView[]) => m.map((p) => p.firstName).join(' & ');
@@ -230,7 +230,7 @@ export default function ChatsTab() {
                       <span className="inline-flex items-center gap-1 font-semibold text-coral-700">✕ rejected</span>
                     )}
                   </div>
-                  <p className="whitespace-pre-wrap"><NaughtyText text={m.text} /></p>
+                  <NaughtyBox text={m.text} className="whitespace-pre-wrap rounded-lg" />
                   <div className="mt-0.5 flex items-center justify-between">
                     <span className="text-[11px] text-navy-400">{fmt(m.createTime)}</span>
                     <span className="flex gap-2">

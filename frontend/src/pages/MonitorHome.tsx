@@ -4,6 +4,7 @@ import PageShell from '../components/PageShell';
 import DashboardTab from './monitor/DashboardTab';
 import UsersTab from './monitor/UsersTab';
 import ChatsTab from './monitor/ChatsTab';
+import AuditsTab from './monitor/AuditsTab';
 import { NaughtyProvider } from '../naughty';
 
 const BASE_TABS = [
@@ -60,7 +61,7 @@ export default function MonitorHome({ me }: { me: UserFullView }) {
         {tab === 'chats' && <ChatsTab />}
         {tab === 'learning' && <Placeholder label="Learning" />}
         {tab === 'ideas' && <Placeholder label="Ideas" />}
-        {tab === 'audits' && <Placeholder label="Message Audits" />}
+        {tab === 'audits' && <AuditsTab />}
         {tab === 'logs' && <Placeholder label="Logs" />}
       </PageShell>
     </NaughtyProvider>

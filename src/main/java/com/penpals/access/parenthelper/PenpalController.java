@@ -55,10 +55,10 @@ public class PenpalController {
 		return PenpalBioView.of(penpalService.findById(penpalId));
 	}
 
-	@GetMapping("/relations")
-	public PenpalMapRelationshipView relations (@RequestAttribute(ActingAsPenpalFilter.ACTIVE_PENPAL_ATTR) Long penpalId) {
-		return penpalService.penpalChatMap(penpalId);
-	}
+//	@GetMapping("/relations")
+//	public PenpalMapRelationshipView relations (@RequestAttribute(ActingAsPenpalFilter.ACTIVE_PENPAL_ATTR) Long penpalId) {
+//		return penpalService.penpalChatMap(penpalId);
+//	}
 
 	///////////////////////////////////////////////////////////////
 	// UPDATE
@@ -99,9 +99,9 @@ public class PenpalController {
 	///////////////////////////////////////////////////////////////
 	// UPDATE
 
-	@PutMapping("/messages/{messageId}")
-	public ResponseEntity<Void> updateMessageText(@Valid @RequestBody MessageRequests.UpdateMessageTextOnlyRequest request, @RequestAttribute(name = ActingAsPenpalFilter.ACTIVE_PENPAL_ATTR) Long penpalId, @PathVariable Long messageId) {
-		messageService.updateMessageTextForPenpal(request, messageId, penpalId, currentUserService.currentId());
-		return ResponseEntity.noContent().build();
-	}
+//	@PutMapping("/messages/{messageId}")
+//	public ResponseEntity<Void> updateMessageText(@Valid @RequestBody MessageRequests.UpdateMessageTextOnlyRequest request, @RequestAttribute(name = ActingAsPenpalFilter.ACTIVE_PENPAL_ATTR) Long penpalId, @PathVariable Long messageId) {
+//		messageService.updateMessageTextForPenpal(request, messageId, penpalId, currentUserService.currentId());
+//		return ResponseEntity.noContent().build();
+//	}
 }

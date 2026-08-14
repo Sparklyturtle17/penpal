@@ -3,6 +3,8 @@ package com.penpals.chat.message;
 import com.penpals.chat.Chat;
 import com.penpals.chat.ChatRepository;
 import com.penpals.chat.dto.MessageRequests.*;
+import com.penpals.chat.message.audit.MessageAudit;
+import com.penpals.chat.message.audit.MessageAuditService;
 import com.penpals.common.exceptions.NotFoundException;
 import com.penpals.users.AppUser;
 import com.penpals.users.AppUserRepository;
@@ -12,6 +14,7 @@ import com.penpals.users.penpal.PenpalRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
@@ -24,10 +27,12 @@ public class MessageService {
 	private final PenpalRepository penpalRepository;
 	private final ChatRepository chatRepository;
 	private final AppUserRepository appUserRepository;
+	private final MessageAuditService messageAuditService;
 
 	///////////////////////////////////////////////////////////////
 	// CREATE
 
+	@Transactional
 	public Message createMessage(CreateNewMessageRequest req, Long penpalId, Long performedById) {
 		Penpal author = penpalRepository.findById(penpalId)
 			.orElseThrow(() -> new NotFoundException("No penpal " + penpalId));
@@ -54,7 +59,12 @@ public class MessageService {
 		m.setChat(chat);
 		m.setApproved(null);   // pending until a monitor approves (null = awaiting review)
 
-		return messageRepository.save(m);
+		Message created = messageRepository.save(m);
+
+		messageAuditService.createAuditRecord(created, null);
+		// if this throws an exception, because transactional everything will roll back
+
+		return created;
 	}
 
 	public List<Message> broadcastToAllChats(CreateBlastMessageRequest request, Long monitorId) {
@@ -74,6 +84,10 @@ public class MessageService {
 				return m;
 			})
 			.map(messageRepository::save)
+			.map((message) -> {
+				messageAuditService.createAuditRecord(message, monitor);
+				return message;
+			})
 			.toList();
 	}
 
@@ -101,6 +115,7 @@ public class MessageService {
 	///////////////////////////////////////////////////////////////
 	// UPDATE
 
+	@Transactional
 	public Message updateMessageTextForPenpal(UpdateMessageTextOnlyRequest request, Long messageId, Long penpalAuthorId, Long performedById) {
 		Message m = messageRepository.findById(messageId)
 			.orElseThrow(() -> new NotFoundException("No message " + messageId));
@@ -114,64 +129,49 @@ public class MessageService {
 			throw new AccessDeniedException("You can only edit your own message");
 		}
 
-		// TODO AUDIT STUFF
-//		AuditMessage audit = new AuditMessage();
-//		audit.set
-//		Long id = auditRepository.save(audit);
-
-//		if (id == null) {
-//			throw new InternalException("Could not save, audit failed " + req);
-//		}
-
 		m.setText(request.text());
 		m.setPerformedBy(performedBy);
+
+		messageAuditService.createAuditRecord(m, performedBy);
+		// if this throws an exception, because transactional everything will roll back
 
 		return messageRepository.save(m);
 	}
 
+	@Transactional
 	public Message updateMessageTextForMonitor(UpdateMessageTextOnlyRequest request, Long messageId, Long performedById) {
 		Message m = messageRepository.findById(messageId)
 			.orElseThrow(() -> new NotFoundException("No message " + messageId));
 		AppUser editor = appUserRepository.findById(performedById)
 			.orElseThrow(() -> new NotFoundException("No user " + performedById));
 
-		// TODO AUDIT STUFF
-		//		AuditMessage audit = new AuditMessage();
-		//		audit.set
-		//		Long id = auditRepository.save(audit);
-
-		//		if (id == null) {
-		//			throw new InternalException("Could not save, audit failed " + req);
-		//		}
-
 		m.setText(request.text());
 		m.setPerformedBy(editor);
+
+		messageAuditService.createAuditRecord(m, editor);
+		// if this throws an exception, because transactional everything will roll back
 
 		return messageRepository.save(m);
 	}
 
+	@Transactional
 	public Message approveMessage(ApprovalMessageRequest req, Long messageId, Long approvedById) {
 		Message m = messageRepository.findById(messageId)
 			.orElseThrow(() -> new NotFoundException("No message " + messageId));
 		AppUser approvedBy = appUserRepository.findById(approvedById)
 			.orElseThrow(() -> new NotFoundException("No user " + approvedById));
 
-		// TODO AUDIT STUFF
-		//		AuditMessage audit = new AuditMessage();
-		//		audit.set
-		//		Long id = auditRepository.save(audit);
-
-		//		if (id == null) {
-		//			throw new InternalException("Could not save, audit failed " + req);
-		//		}
-
 		m.setApproved(req.approved());
 		m.setApprovedBy(approvedBy);
 		m.setApprovedTime(Instant.now());
 
+		messageAuditService.createAuditRecord(m, approvedBy);
+		// if this throws an exception, because transactional everything will roll back
+
 		return messageRepository.save(m);
 	}
 
+	@Transactional
 	public Message fakeRemoveMessage(Long messageId, Long chatId, Long approvedById) {
 		Message m = messageRepository.findById(messageId)
 			.orElseThrow(() -> new NotFoundException("No message " + messageId));
@@ -186,6 +186,9 @@ public class MessageService {
 
 		m.setPerformedBy(approvedBy);
 		m.setChat(null);
+
+		messageAuditService.createAuditRecord(m, approvedBy);
+		// if this throws an exception, because transactional everything will roll back
 
 		return messageRepository.save(m);
 	}

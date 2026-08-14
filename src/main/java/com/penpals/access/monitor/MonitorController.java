@@ -44,11 +44,6 @@ public class MonitorController {
 	private final ChatService chatService;
 	private final NaughtyWordsService naughtyWordsService;
 
-	// moderation word list — monitor/admin only (class-level @PreAuthorize gates it)
-	@GetMapping("/naughty-words")
-	public List<String> naughtyWords() {
-		return naughtyWordsService.words();
-	}
 
 	//╔═════════════════════════════════════════════════════════╗
 	//║                          USERS                          ║
@@ -147,15 +142,20 @@ public class MonitorController {
 	///////////////////////////////////////////////////////////////
 	// READ
 
+	@GetMapping("/naughty-words")
+	public List<String> naughtyWords() {
+		return naughtyWordsService.words();
+	}
+
 	@GetMapping("/messages/{id}")
 	public MessageMonitorView viewMessage(@PathVariable Long id) {
 		return MessageMonitorView.of(messageService.findById(id));
 	}
 
-	@GetMapping("/messages/all")
-	public List<MessageMonitorView> viewAllMessages() {
-		return messageService.findAll().stream().map(MessageMonitorView::of).toList();
-	}
+//	@GetMapping("/messages/all")
+//	public List<MessageMonitorView> viewAllMessages() {
+//		return messageService.findAll().stream().map(MessageMonitorView::of).toList();
+//	}
 
 	@GetMapping("/messages/unapproved")
 	public List<MessageMonitorView> viewAllUnapprovedMessages() {

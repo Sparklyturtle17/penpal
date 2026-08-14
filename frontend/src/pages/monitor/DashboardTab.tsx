@@ -3,7 +3,7 @@ import { useApi, ApiError } from '../../api/useApi';
 import type { MessageMonitorView } from '../../types';
 import Modal from '../../components/Modal';
 import EditMessageModal from '../../components/EditMessageModal';
-import { NaughtyText } from '../../naughty';
+import { NaughtyBox } from '../../naughty';
 
 const fmt = (iso: string) => new Date(iso).toLocaleString();
 const chatLabel = (m: MessageMonitorView) => m.chat.members.map((p) => p.firstName).join(' & ');
@@ -82,7 +82,7 @@ export default function DashboardTab() {
                 From {m.penpalAuthor.firstName} {m.penpalAuthor.lastName}
                 {m.penpalAuthor.state ? ` · ${m.penpalAuthor.state}` : ''}
               </p>
-              <p className="whitespace-pre-wrap rounded-lg bg-navy-50 p-3 text-sm"><NaughtyText text={m.text} /></p>
+              <NaughtyBox text={m.text} className="whitespace-pre-wrap rounded-lg bg-navy-50 p-3 text-sm" />
               <div className="mt-3 flex gap-2">
                 <button
                   onClick={() => setEditing(m)}

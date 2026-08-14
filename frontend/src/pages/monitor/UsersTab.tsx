@@ -3,7 +3,7 @@ import { useApi, ApiError } from '../../api/useApi';
 import type { ChatMonitorView, GuardianMapRelationshipView, MonitorChatMessageView, MonitorMapRelationshipView, PenpalMonitorView, UserFullView } from '../../types';
 import Modal from '../../components/Modal';
 import { PlaceSelect, AgeSelect } from '../../components/penpalFields';
-import { NaughtyText, HighlightTextarea } from '../../naughty';
+import { NaughtyBox, HighlightTextarea } from '../../naughty';
 
 const errText = (e: unknown) => `${(e as ApiError).status}: ${(e as ApiError).message}`;
 const initials = (a: string, b: string) => `${a[0] ?? ''}${b[0] ?? ''}`.toUpperCase();
@@ -456,7 +456,7 @@ function PenpalDetail({ p }: { p: PenpalMonitorView }) {
       <Field label="State" value={p.state ?? '—'} />
       <div className="flex justify-between gap-4">
         <dt className="text-navy-500">Biography</dt>
-        <dd className="text-right"><NaughtyText text={p.biography} /></dd>
+        <dd className="text-right"><NaughtyBox text={p.biography} className="rounded-lg" /></dd>
       </div>
       <Field label="Parent / Helper" value={p.parentHelper ? `${p.parentHelper.firstName} ${p.parentHelper.lastName}` : '—'} />
     </dl>

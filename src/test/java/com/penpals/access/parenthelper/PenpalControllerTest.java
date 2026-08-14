@@ -1,13 +1,16 @@
 package com.penpals.access.parenthelper;
 
 import com.penpals.ControllerTestBase;
+import com.penpals.chat.dto.AuditViews.*;
 import com.penpals.chat.dto.ChatMessagesView.*;
 import com.penpals.chat.dto.ChatViews.*;
 import com.penpals.chat.dto.MessageRequests.*;
 import com.penpals.chat.dto.MessageViews.*;
 
 import java.util.List;
+
 import com.penpals.common.config.ActingAsPenpalFilter;
+import com.penpals.users.dto.AppUserViews.*;
 import com.penpals.users.dto.PenpalViews.*;
 import com.penpals.users.dto.RelationshipsView.*;
 import org.junit.jupiter.api.Test;
@@ -35,7 +38,7 @@ public class PenpalControllerTest extends ControllerTestBase {
 
 	@Test
 	void guardianActingAs_TheirPenpal_canHit_PenpalEndpoint() throws Exception {
-		mockMvc.perform(get("/api/penpal/penpals/relations")
+		mockMvc.perform(get("/api/penpal/penpals/chats")
 				.header(ActingAsPenpalFilter.HEADER, BOB.getId())
 				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
 			.andExpect(status().isOk());
@@ -43,7 +46,7 @@ public class PenpalControllerTest extends ControllerTestBase {
 
 	@Test
 	void guardianActingAs_NotTheirPenpal_cannotHit_PenpalEndpoint() throws Exception {
-		mockMvc.perform(get("/api/penpal/penpals/relations")
+		mockMvc.perform(get("/api/penpal/penpals/chats")
 				.header(ActingAsPenpalFilter.HEADER, CARLOS.getId())
 				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
 			.andExpect(status().isForbidden());
@@ -95,17 +98,17 @@ public class PenpalControllerTest extends ControllerTestBase {
 			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
 	}
 
-	@Test
-	void guardianActingAs_TheirPenpal_readsRelationshipMap() throws Exception {
-		PenpalMapRelationshipView expected = new PenpalMapRelationshipView(
-			PenpalBioView.of(BOB), PenpalBioView.of(ALICE));
-
-		mockMvc.perform(get("/api/penpal/penpals/relations")
-				.header(ActingAsPenpalFilter.HEADER, BOB.getId())
-				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
-			.andExpect(status().isOk())
-			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
-	}
+//	@Test
+//	void guardianActingAs_TheirPenpal_readsRelationshipMap() throws Exception {
+//		PenpalMapRelationshipView expected = new PenpalMapRelationshipView(
+//			PenpalBioView.of(BOB), PenpalBioView.of(ALICE));
+//
+//		mockMvc.perform(get("/api/penpal/penpals/relations")
+//				.header(ActingAsPenpalFilter.HEADER, BOB.getId())
+//				.with(httpBasic(HELEN.getAuthId(), HELEN.getAuthId())))
+//			.andExpect(status().isOk())
+//			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
+//	}
 
 	///////////////////////////////////////////////////////////////
 	// UPDATE
@@ -162,6 +165,40 @@ public class PenpalControllerTest extends ControllerTestBase {
 				.header(ActingAsPenpalFilter.HEADER, CARLOS.getId())
 				.with(httpBasic(HUGO.getAuthId(), HUGO.getAuthId())))
 			.andExpect(status().isForbidden());
+	}
+
+	@Test
+	void penpalCreatingMessage_writesACreateAudit() throws Exception {
+		var req = new CreateNewMessageRequest("Hi Bob, I found a cool rock today!", MSG_1.getChat().getId());
+
+		MvcResult created = mockMvc.perform(post("/api/penpal/penpals/messages")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req))
+				.header(ActingAsPenpalFilter.HEADER, ALICE.getId())
+				.with(httpBasic(PAT.getAuthId(), PAT.getAuthId())))
+			.andExpect(status().isCreated()).andReturn();
+		String loc = created.getResponse().getHeader("Location");
+		long newId = Long.parseLong(loc.substring(loc.lastIndexOf('/') + 1));
+
+		MvcResult res = mockMvc.perform(get("/api/penpal/admins/audits/message/" + newId)
+				.with(httpBasic("admin", "admin")))
+			.andExpect(status().isOk()).andReturn();
+
+		ListOfAudits list = objectMapper.readValue(res.getResponse().getContentAsString(), ListOfAudits.class);
+		assertThat(list.auditFullViewList()).hasSize(1);
+		AuditFullView a = list.auditFullViewList().get(0);
+
+		AuditFullView expected = new AuditFullView(
+			a.auditId(), a.archiveTime(),        // server-generated
+			null,                                 // editedBy: it's a create, nobody edited
+			a.currentMessageState(),              // live message (server-built)
+			req.text(),                           // snapshot text
+			PenpalMonitorView.of(ALICE),          // author
+			UserFullView.of(PAT),                 // performedBy = guardian
+			a.createTime(),                       // server-generated
+			ChatMonitorView.of(CHAT_1),
+			null, null, null);                    // pending: approved / approvedBy / approvedTime
+		assertThat(a).isEqualTo(expected);
 	}
 
 	///////////////////////////////////////////////////////////////
@@ -298,54 +335,60 @@ public class PenpalControllerTest extends ControllerTestBase {
 
 	///////////////////////////////////////////////////////////////
 	// UPDATE
+//
+//	@Test
+//	void guardianActingAs_TheirPenpal_canUpdate_Mine_Message_Text() throws Exception {
+//		UpdateMessageTextOnlyRequest message1Update = new UpdateMessageTextOnlyRequest("There are no strings on me!");
+//
+//		mockMvc.perform(put("/api/penpal/penpals/messages/" + MSG_1.getId())
+//				.contentType(MediaType.APPLICATION_JSON)
+//				.content(objectMapper.writeValueAsString(message1Update))
+//				.header(ActingAsPenpalFilter.HEADER, ALICE.getId())
+//				.with(httpBasic(PAT.getAuthId(), PAT.getAuthId())))
+//			.andExpect(status().isNoContent())
+//			.andReturn();
+//
+//		MessageSimpleView expected = new MessageSimpleView(
+//			MSG_1.getId(),
+//			message1Update.text(),
+//			PenpalBioView.of(MSG_1.getPenpalAuthor()),
+//			MSG_1.getCreateTime(),
+//			MSG_1.getApproved());
+//
+//		mockMvc.perform(get("/api/penpal/penpals/messages/" + MSG_1.getId())
+//				.header(ActingAsPenpalFilter.HEADER, ALICE.getId())
+//				.with(httpBasic(PAT.getAuthId(), PAT.getAuthId())))
+//			.andExpect(status().isOk())
+//			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
+//
+//		mockMvc.perform()
+//
+//		MessageAudit expectedAudit = new MessageAudit(
+//
+//		)
+//	}
+//
+//	@Test
+//	void guardianActingAs_TheirPenpal_cannotUpdate_NotMine_Message_Text() throws Exception {
+//		UpdateMessageTextOnlyRequest message1Update = new UpdateMessageTextOnlyRequest("There are no strings on me!");
+//
+//		mockMvc.perform(put("/api/penpal/penpals/messages/" + MSG_1.getId())
+//				.contentType(MediaType.APPLICATION_JSON)
+//				.content(objectMapper.writeValueAsString(message1Update))
+//				.header(ActingAsPenpalFilter.HEADER, BOB.getId())
+//				.with(httpBasic(PAT.getAuthId(), PAT.getAuthId())))
+//			.andExpect(status().isForbidden());
+//	}
 
-	@Test
-	void guardianActingAs_TheirPenpal_canUpdate_Mine_Message_Text() throws Exception {
-		UpdateMessageTextOnlyRequest message1Update = new UpdateMessageTextOnlyRequest("There are no strings on me!");
-
-		mockMvc.perform(put("/api/penpal/penpals/messages/" + MSG_1.getId())
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(message1Update))
-				.header(ActingAsPenpalFilter.HEADER, ALICE.getId())
-				.with(httpBasic(PAT.getAuthId(), PAT.getAuthId())))
-			.andExpect(status().isNoContent())
-			.andReturn();
-
-		MessageSimpleView expected = new MessageSimpleView(
-			MSG_1.getId(),
-			message1Update.text(),
-			PenpalBioView.of(MSG_1.getPenpalAuthor()),
-			MSG_1.getCreateTime(),
-			MSG_1.getApproved());
-
-		mockMvc.perform(get("/api/penpal/penpals/messages/" + MSG_1.getId())
-				.header(ActingAsPenpalFilter.HEADER, ALICE.getId())
-				.with(httpBasic(PAT.getAuthId(), PAT.getAuthId())))
-			.andExpect(status().isOk())
-			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
-	}
-
-	@Test
-	void guardianActingAs_TheirPenpal_cannotUpdate_NotMine_Message_Text() throws Exception {
-		UpdateMessageTextOnlyRequest message1Update = new UpdateMessageTextOnlyRequest("There are no strings on me!");
-
-		mockMvc.perform(put("/api/penpal/penpals/messages/" + MSG_1.getId())
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(message1Update))
-				.header(ActingAsPenpalFilter.HEADER, BOB.getId())
-				.with(httpBasic(PAT.getAuthId(), PAT.getAuthId())))
-			.andExpect(status().isForbidden());
-	}
-
-	@Test
-	void guardianActingAs_TheirPenpal_cannotUpdate_Mine_Message_Approval() throws Exception {
-		ApprovalMessageRequest message1Update = new ApprovalMessageRequest(true);
-
-		mockMvc.perform(put("/api/penpal/penpals/messages/" + MSG_1.getId())
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(message1Update))
-				.header(ActingAsPenpalFilter.HEADER, ALICE.getId())
-				.with(httpBasic(PAT.getAuthId(), PAT.getAuthId())))
-			.andExpect(status().isBadRequest());
-	}
+//	@Test
+//	void guardianActingAs_TheirPenpal_cannotUpdate_Mine_Message_Approval() throws Exception {
+//		ApprovalMessageRequest message1Update = new ApprovalMessageRequest(true);
+//
+//		mockMvc.perform(put("/api/penpal/penpals/messages/" + MSG_1.getId())
+//				.contentType(MediaType.APPLICATION_JSON)
+//				.content(objectMapper.writeValueAsString(message1Update))
+//				.header(ActingAsPenpalFilter.HEADER, ALICE.getId())
+//				.with(httpBasic(PAT.getAuthId(), PAT.getAuthId())))
+//			.andExpect(status().isBadRequest());
+//	}
 }

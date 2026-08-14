@@ -103,3 +103,27 @@ export interface SimpleChatMessageView {
   chatInfo: ChatSimpleView;
   messages: MessageSimpleView[];
 }
+
+// ---- audit views (GET /admins/audits/*) -------------------------------------
+// One historical snapshot of a message. GET /admins/audits/messages/all returns
+// the list already grouped by message and ordered by most-recent edit (newest
+// group first, newest snapshot first within a group) — the UI groups consecutive
+// rows and does not sort client-side.
+export interface AuditFullView {
+  auditId: number;
+  archiveTime: string;                       // when this snapshot was archived (the edit time)
+  editedBy: UserFullView | null;             // who made the edit; null for the original create
+  currentMessageState: MessageMonitorView;   // the message as it stands now (live)
+  text: string;                              // snapshot text at this version
+  penpalAuthor: PenpalMonitorView;           // synthesized "~ a monitor" for broadcasts
+  performedBy: UserFullView;
+  createTime: string;
+  chat: ChatMonitorView | null;              // null if the chat was since removed
+  approved: boolean | null;
+  approvedBy: UserFullView | null;
+  approvedTime: string | null;
+}
+
+export interface ListOfAudits {
+  auditFullViewList: AuditFullView[];
+}

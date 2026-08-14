@@ -41,6 +41,27 @@ export function NaughtyText({ text }: { text: string }) {
   );
 }
 
+// True when `text` contains at least one whole-word naughty match (same tokenizer
+// as NaughtyText, so the border and the word highlight always agree).
+export function useHasNaughty(text: string): boolean {
+  const words = useNaughty();
+  if (words.size === 0) return false;
+  return text.split(/([A-Za-z']+)/).some((p) => words.has(p.toLowerCase()));
+}
+
+// NaughtyText in a box whose border turns red-orange when the text contains a
+// naughty word — so a flagged message reads at the container level, not just on the
+// word. A transparent 2px border is always present so flagging never shifts layout.
+// `className` styles the box (padding, radius, background, etc).
+export function NaughtyBox({ text, className = '' }: { text: string; className?: string }) {
+  const flagged = useHasNaughty(text);
+  return (
+    <div className={`${className} border-2 ${flagged ? 'border-coral-500' : 'border-transparent'}`}>
+      <NaughtyText text={text} />
+    </div>
+  );
+}
+
 // An editable textarea that still shows naughty words in orange, via a highlighted
 // backdrop behind a transparent-text textarea. `className` must set the box (padding,
 // border, font-size) — it's applied to both layers so they line up exactly.
@@ -51,13 +72,15 @@ export function HighlightTextarea({
 }) {
   const taRef = useRef<HTMLTextAreaElement>(null);
   const backRef = useRef<HTMLDivElement>(null);
+  const flagged = useHasNaughty(value);
 
   const syncScroll = () => {
     if (backRef.current && taRef.current) backRef.current.scrollTop = taRef.current.scrollTop;
   };
   useEffect(syncScroll, [value]);
 
-  const box = `${className} w-full whitespace-pre-wrap break-words`;
+  // recolor the caller's border coral when a naughty word is present
+  const box = `${className} w-full whitespace-pre-wrap break-words ${flagged ? 'border-coral-500' : ''}`;
   return (
     <div className="relative">
       <div ref={backRef} aria-hidden className={`${box} pointer-events-none absolute inset-0 overflow-hidden bg-white text-navy-800`}>

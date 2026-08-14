@@ -10,6 +10,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
+import com.penpals.chat.dto.AuditViews.*;
+import com.penpals.users.dto.AppUserViews.*;
+
+import java.util.List;
 
 import static com.penpals.SeedData.*;
 import static com.penpals.TestFixtures.Users.*;
@@ -104,6 +108,34 @@ public class AdminControllerTest extends ControllerTestBase {
 
 	///////////////////////////////////////////////////////////////
 	// READ
+
+	@Test
+	void admin_readsAllAudits_groupedByMessage_mostRecentEditFirst() throws Exception {
+		ListOfAudits expected = ListOfAudits.of(List.of(AUDIT_3, AUDIT_2, AUDIT_1));
+		mockMvc.perform(get("/api/penpal/admins/audits/messages/all").with(httpBasic("admin", "admin")))
+			.andExpect(status().isOk())
+			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
+	}
+
+	@Test
+	void admin_readsAllAuditsForAMessage() throws Exception {
+		ListOfAudits expected = ListOfAudits.of(List.of(AUDIT_1));
+
+		mockMvc.perform(get("/api/penpal/admins/audits/message/" + MSG_1.getId())
+				.with(httpBasic("admin", "admin")))
+			.andExpect(status().isOk())
+			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
+	}
+
+	@Test
+	void admin_readsAllAuditsTouchedByAUser() throws Exception {
+		ListOfAudits expected = ListOfAudits.of(List.of(AUDIT_3));
+
+		mockMvc.perform(get("/api/penpal/admins/audits/user/" + MONA.getId())
+				.with(httpBasic("admin", "admin")))
+			.andExpect(status().isOk())
+			.andExpect(content().json(objectMapper.writeValueAsString(expected), true));
+	}
 
 	///////////////////////////////////////////////////////////////
 	// UPDATE

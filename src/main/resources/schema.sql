@@ -55,12 +55,12 @@ CREATE TABLE message_audit (
     archive_time    TIMESTAMP WITH TIME ZONE,
     edited_by_id    BIGINT,                     -- app rule: creator | their helper | any monitor
     ------------------------
-    message_id      BIGINT,                     -- FK -> message
+    message_id      BIGINT          NOT NULL,                     -- FK -> message
     text            VARCHAR(2000) NOT NULL,
-    penpal_author_id   BIGINT        NOT NULL,     -- author is a penpal
+    penpal_author_id   BIGINT,                      -- author is a penpal; NULL for monitor broadcasts
     performed_by_id    BIGINT        NOT NULL,     -- logged in user parenhelper probably
     create_time     TIMESTAMP WITH TIME ZONE NOT NULL,
-    chat_id         BIGINT        NOT NULL,
+    chat_id         BIGINT,                     -- nullable: a soft-deleted chat is recorded as NULL
     approved        BOOLEAN,
     approved_by_id  BIGINT,
     approved_time   TIMESTAMP WITH TIME ZONE,

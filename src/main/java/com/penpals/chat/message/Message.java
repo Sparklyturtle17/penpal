@@ -34,7 +34,8 @@ public class Message {
 	@Column(nullable = false)
 	private Instant createTime;
 
-	@ManyToOne(optional = true)
+	@JoinColumn(nullable = false)
+	@ManyToOne
 	private Chat chat;
 
 	private Boolean approved;
